@@ -1,0 +1,480 @@
+% Dokumentklassen sættes til memoir.
+% Manual: http://ctan.org/tex-archive/macros/latex/contrib/memoir/memman.pdf
+\documentclass[a4paper,10pt,fleqn]{article}
+\usepackage[a4paper]{geometry}
+% Danske udtryk (fx figur og tabel) samt dansk orddeling og fonte med
+
+% danske tegn. Hvis LaTeX brokker sig over æ, ø og å skal du udskifte
+% "utf8" med "latin1" eller "applemac". 
+\usepackage[utf8]{inputenc}
+%\usepackage[danish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e} 
+\usepackage{color}
+\usepackage{hyperref}
+
+% Matematisk udtryk, fede symboler, theoremer og fancy ting (fx kædebrøker)
+\usepackage{amsmath,amssymb}
+\usepackage{stmaryrd}
+\usepackage{bm}
+\usepackage{amsthm}
+\usepackage{tikz}
+\usepackage{mathtools}
+% Kodelisting. Husk at læse manualen hvis du vil lave fancy ting.
+% Manual: http://mirror.ctan.org/macros/latex/contrib/listings/listings.pdf
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage{bussproofs}
+\usepackage{mathpartir}
+ 
+% Fancy ting med enheder og datatabeller. Læs manualen til pakken
+% Manual: http://www.ctan.org/tex-archive/macros/latex/contrib/siunitx/siunitx.pdf
+%\usepackage{siunitx}
+% Indsættelse af grafik.
+\usepackage{graphicx}
+%\usepackage{bussproofs}
+
+% Reaktionsskemaer. Læs manualen for at se eksempler.
+% Manual: http://www.ctan.org/tex-archive/macros/latex/contrib/mhchem/mhchem.pdf
+%\usepackage[version=3]{mhchem}
+
+\setlength{\mathindent{1cm}}
+
+\newcommand{\sem}[1]{\ensuremath{\llbracket #1 \rrbracket}}
+\newcommand{\curly}[1]{\ensuremath{\mathcal{#1}}}
+
+\DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\safe}{safe}
+\DeclareMathOperator{\irred}{irred}
+\DeclareMathOperator{\SNPred}{SN}
+\DeclareMathOperator{\val}{Val}
+
+\newcommand{\typej}[5]{\ensuremath{#1;#2;#3 \vdash #4 : #5}}
+\newcommand{\heapj}[4]{\ensuremath{#1;#2 \vdash #3 : #4}}
+\newcommand{\sref}{\ensuremath{\reff \;}}
+\newcommand{\tref}{\ensuremath{\Ref \;}}
+
+\newcommand{\evalto}{\ensuremath{\mapsto}}
+\newcommand{\evaltos}{\ensuremath{\evalto^*}}
+\newcommand{\warning}[1]{{\color{red} !` #1 !} \\}
+\newcommand{\mtenv}{\ensuremath{\bullet}}
+\newcommand{\case}[1]{\\{\bf Case} #1,}
+\newcommand{\eqdef}{\ensuremath{ \; \stackrel{\mathclap{\normalfont\mbox{def}}}{=} \;}}
+\newcommand{\subst}[3]{\ensuremath{\ensuremath{#1[#2/#3]}}}
+\newcommand{\tlabs}[3]{\ensuremath{\lambda #1 : #2 . \; #3 }}
+\newcommand{\vbar}{\ensuremath{\; | \;}}
+\newcommand{\tarrow}[2]{\ensuremath{ #1 \rightarrow #2}}
+\newcommand{\eif}[3]{\ensuremath{ \text{if}\; #1 \; \text{then} \; #2 \; \text{else} \; #3}}
+\newcommand{\true}{\ensuremath{\text{true}}}
+\newcommand{\false}{\ensuremath{\text{false}}}
+\newcommand{\SN}[2]{\ensuremath{\SNPred_{#1}(#2)}}
+
+\newcommand{\epred}[1]{\ensuremath{\curly{E}\sem{#1}}}
+\newcommand{\vpred}[1]{\ensuremath{\curly{V}\sem{#1}}}
+\newcommand{\gpred}[1]{\ensuremath{\curly{G}\sem{#1}}}
+
+
+\newcommand*{\circled}[1]{\tikz[baseline=(char.base)]{
+            \node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+\newcommand{\TVar}{\ensuremath{
+    \inferrule*[right=T-Var]{\Gamma(x) = \tau}
+                            {\Gamma \vdash x : \tau}}}
+\newcommand{\TApp}{\ensuremath{
+    \inferrule*[right=T-App]{\Gamma \vdash e_1 : \tarrow{\tau_2}{\tau} \and
+                            \Gamma \vdash e_2 : \tau_2}
+                           {\Gamma \vdash e_1 \; e_2 : \tau}}}
+
+\newcommand{\TAbs}{\ensuremath{\inferrule*[right=T-Abs]{\Gamma, x: \tau \vdash e : \tau_2}
+                           {\Gamma \vdash \tlabs{x}{\tau_1}{e} : \tarrow{\tau_1}{\tau_2}}}}
+
+%Lecture 1:
+\newtheorem*{strnorm}{Theorem}
+\newtheorem*{bstrnorm}{Theorem}
+\newtheorem*{substlem}{Lemma}
+\newtheorem*{forback}{Lemma}
+%Lecture 2:
+\newtheorem*{stlctypesafety}{Theorem}
+\newtheorem*{progress}{Lemma}
+\newtheorem*{preservation}{Lemma}
+\newtheorem*{btypesafety}{Theorem}
+
+\author{Lau}
+\title{OPLSS, Notes for Amal Ahmed's lectures.}
+\begin{document}
+\maketitle
+\section*{Lecture 1, Logical Relations}
+\subsection*{Simply Typed Lambda Calculus (STLC)}
+Types:
+\[
+    \tau ::=  bool \vbar \tarrow{\tau}{\tau}
+\]
+Terms:
+\[
+    e    ::= x \vbar \true 
+                 \vbar \false 
+                 \vbar \eif{e}{e}{e} 
+                 \vbar \tlabs{x}{\tau }{e}
+                 \vbar e \; e
+\]
+Values:
+\[
+    v    ::= \true \vbar \false \vbar \tlabs{x}{\tau}{e}
+\]
+Evaluation contexts:
+\[
+    E    ::= [] \vbar \eif{E}{e}{e} \vbar E \; e_2 \vbar v \; E
+\]
+Evaluations:
+\begin{align*}
+  & \eif{\true}{e_1}{e_1} \evalto e_1 \\
+  & \eif{\false}{e_1}{e_1} \evalto e_2 \\
+  & \tlabs{x}{\tau}{e} \; v \evalto \subst{e}{v}{x} \\
+\end{align*}
+\[
+  \inferrule*[]{e \evalto e'}
+               {E[e] \evalto E[e']}
+\]
+Typing Contexts:
+\[
+  \Gamma ::= \dot \bar \Gamma , x : \tau
+\]
+\clearpage
+Typing rules:
+\[
+  \TVar
+\hspace{2cm}
+  \inferrule*[right=T-True]{ }
+                           {\Gamma \vdash \true : bool}
+\]
+\[
+  \inferrule*[right=T-False]{ }
+                            {\Gamma \vdash \false : bool} 
+\hspace{2cm}
+  \inferrule*[right=T-If]{\Gamma \vdash e : bool \and \Gamma \vdash e_1 : \tau \and \Gamma \vdash e_2 : \tau}
+                         {\Gamma \vdash \eif{e}{e_1}{e_2}}
+\]  
+\[
+  \TAbs
+\]
+\[
+  \TApp
+\]
+\subsection*{Logical Relations}
+Proof method to establish properties.
+\begin{itemize}
+\item Termination
+\item Type safety
+\item Equivalence of programs
+  \begin{itemize}
+  \item Correctness of programs
+  \item Representation independence
+  \item Parametricity and free theorems, e.g.,
+    \[
+    f: \forall \alpha. \; \tarrow{\alpha}{\alpha}
+    \]
+    Cannot inspect $\alpha$ as it has no idea which type it will be $\leadsto$ this function must be $id$.
+    \[
+    \forall. \; \tarrow{int}{\alpha}
+    \]
+    A function with this type does not exist (the function would need to return something of type $\alpha$, but it only has something of type $int$ to work with, so it cannot return a value of the proper type).
+  \item Security-Typed Languages (for Information Flow Control (IFC))\\
+        Example: All types in the code snippet below are labeled. A type can be labeled with either $L$ for \emph{low} or $H$ for \emph{high}. We do not want any flow from variables with a \emph{high} labeled type to a \emph{low} labeled type. The following is an example of \emph{explicit flow} of information:
+        \begin{lstlisting}[escapeinside={@}{@}]
+  x : int@$^L$@
+  y : int@$^H$@
+  x = y    //This assignment is illegal.
+        \end{lstlisting}
+Further, information may leak through a \emph{side channel}. That is the value denotated by a variable with a \emph{low} labeled type depends on the value of a variable with a \emph{high} labeled type. If this is the case we may not have learned the secret value, but we may have learned some information about it. An example of a side channel:
+        \begin{lstlisting}[escapeinside={@}{@}]
+  x : int@$^L$@
+  y : int@$^H$@
+  if y > 0 then x = 0 else x = 1
+        \end{lstlisting}
+How do we then argue a program is secure? Non-interference:
+\begin{align*}
+  & \vdash P : \tarrow{int^L \times int^H}{int^L} \\
+  & P(v_L,v_{H1}) \approx_L P(v_L,v_{H2})
+\end{align*}
+If we run $P$ with the same \emph{low} value and with two different \emph{high} values, then the result of the two runs of the program are equal. That is the \emph{low} result does not depend on \emph{high} values.
+  \end{itemize}
+\end{itemize}
+\subsection*{Categories of Logical Relations}
+\begin{tabular}{l | l}
+  Logical Predicates     & Logical Relations    \\
+\hline
+  (Unary)                & (Binary)             \\
+  $P_\tau(e)$             & $R\tau(e_1,e_2)$     \\
+  - One property         & - Program Equivalence\footnote{Was not in my notes.}\\
+  - Strong normalization & \\
+  - Type safety          & \\
+\end{tabular}
+\subsection*{Strong Normalization of STLC}
+\subsubsection*{A first try on normalization of STLC}
+We start with a couple of abbreviations:
+\begin{align*}
+  e \Downarrow v & \eqdef e \evaltos v \\
+  e \Downarrow   & \eqdef \exists v. \; e \Downarrow v
+\end{align*}
+What we want to prove is:
+\begin{strnorm}[Strong Normalization]
+  If $\mtenv \vdash e : \tau$ then $e \Downarrow$
+\end{strnorm}
+\begin{proof} 
+\warning{This proof gets stuck and is not complete. It is included to motivate the logical relation.}
+By induction on the structure of the typing derivation.
+\case{$\mtenv \vdash \true : bool$} this term has already terminated.
+\case{$\mtenv \vdash \false : bool$} same as for \true.
+\case{$\mtenv \vdash \eif{e}{e_1}{e_2} : \tau$} simple, but requires the use of canonical forms of bool.
+\case{$\mtenv \vdash \tlabs{x}{\tau}{e}$ : \tarrow{\tau_1}{\tau_2}} it is a value, it has terminated.
+\case{$ \TApp $} \\
+By the induction hypothesis we get $e_1 \Downarrow v_1$ and $e_2 \Downarrow v_2$. By the type of $e_1$ we conclude $e_1 \Downarrow \tlabs{x}{\tau_2}{e'}$. What we need to show is $e_1 \; e_2 \Downarrow$.
+\begin{align*}
+  e_1 \; e_2 & \evaltos (\tlabs{x}{\tau_2}{e'}) \; e_2 \\
+            & \evaltos (\tlabs{x}{\tau_2}{e'}) \; v_2 \\
+            & \evaltos e'[v_2/x]
+\end{align*}
+Here we run into an issue as we do not know anything about $e'$. Our induction hypothesis is not strong enough.\footnote{:(}
+\end{proof}
+\subsubsection*{A logical predicate for strongly normalizing expressions}
+We want to define a logical predicate, \SN{\tau}{e}. In English $\SN{\tau}{e}$ is the set of expressions of type $\tau$ that are strongly normalizing.
+
+In general for a logical predicate, $P_\tau(e)$, we want an expression, $e$, in accepted by this predicate to satisfy the following properties:
+\begin{enumerate}
+\item $\mtenv \vdash e : \tau$\footnote{Note: when we later want to prove type safety we do not want well-typedness to be a property of the predicate.}
+\item the property we wish $e$ to have. In this case it would be: $e$ is strongly normalizing.
+\item The condition is preserved by eliminating forms.
+\end{enumerate}
+
+With the above in mind we define the strongly normalizing predicate as follows:
+\begin{align*}
+  \SN{bool}{e} & \Leftrightarrow \mtenv \vdash e : bool \; \wedge \; e \Downarrow \\
+  \SN{\tarrow{\tau_1}{\tau_2}}{e} & \Leftrightarrow \mtenv \vdash e : \tarrow{\tau_1}{\tau_2} \; \wedge \; e \Downarrow \; \wedge \; (\forall e'. \; \SN{\tau_1}{e'} \Rightarrow \SN{\tau_2}{e \; e'})\\
+\end{align*}
+It is here important to consider whether the logical predicate is well-founded. \SN{\tau}{e} is defined by structural induction %TODO: is it really this? Check video.
+over $\tau$, so it is well-founded.
+\subsubsection*{Strongly normalizing using a logical relation}
+We are now ready to show strong normalization using \SN{\tau}{e}. The proof is in two steps:
+\[
+\circled{a} \quad \mtenv \vdash e : \tau \Rightarrow \SN{\tau}{e}
+\]
+\[
+\circled{b} \quad \SN{\tau}{e} \Rightarrow e \Downarrow
+\]
+The structure of this proof is common to proofs that use logical relations. We first prove that well-typed terms are in the relation. Then we prove that terms in the relation actually have the property we want to show (in this case strong normalization).
+
+The proof of \circled{b} is by induction on $\tau$.\footnote{This should not be difficult, as we baked the property we want into the relation. That was the second property we in general wanted a logical relation to satisfy.}
+
+We could try to prove \circled{a} by induction over $\mtenv \vdash e : \tau$, but the case
+\[
+\TAbs
+\]
+gives issues. What we instead do is to prove a generalization of \circled{a}
+\begin{bstrnorm}[\circled{b} Generalized]
+  If $\Gamma \vdash e : \tau$ and $\gamma \models \Gamma$ then $\SN{\tau}{\gamma(e)}$
+\end{bstrnorm}
+$\gamma$ is a substitution, $\gamma = \{x_1 \mapsto v_1, \dots , x_n \mapsto v_n\}$.
+
+In English the theorem reads: If $e$ is well-typed wrt some type $\tau$ and we have some substitution that satisfy the typing environment, then is we close of $e$, then it is in $\SNPred$.
+
+$\gamma \models \Gamma$ is read ``the substitution, $\gamma$, satisfies the type environment, $Gamma$,'' and it is defined as follows:
+\[
+  \gamma \models \Gamma \eqdef \dom(\gamma) = \dom(\Gamma) \; \wedge \; 
+                 \forall x \in \dom(\Gamma). \; \SN{\Gamma(x)}{\gamma(x)}
+\]
+
+To prove the generalized theorem we further need two lemmas
+\begin{substlem}[Substitution Lemma]
+  If $\Gamma \vdash e : \tau$ and $\gamma \models \Gamma$ then $\mtenv \vdash \gamma (e) : \tau$
+\end{substlem}
+\begin{forback}[$\SNPred$ preserved by forward/backward reduction]
+  Suppose $\mtenv \vdash e : \tau$ and $e \evalto e'$
+  \begin{enumerate}
+  \item $\SN{\tau}{e'}$ then $\SN{\tau}{e}$
+  \item $\SN{\tau}{e}$ then $\SN{\tau}{e'}$
+  \end{enumerate}
+\end{forback}
+\begin{proof}
+  Left as an exercise.
+\end{proof}
+\begin{proof}[Proof. (Substitution Lemma)] 
+  Probably also left as an exercise (not proved during the lecture).
+\end{proof}
+\begin{proof}[Proof. (\circled{b} Generalized)] Proof by induction on $\Gamma \vdash e : \tau$.
+\case{$\Gamma \vdash \true : bool$} \\
+We have: 
+\begin{description}
+  \item $\gamma \models \Gamma$
+\end{description}
+We need to show:
+\begin{description}
+  \item $\SN{bool}{\gamma(\true)}$
+\end{description}
+If we do the substitution we just need to show $\SN{bool}{\true}$ which is true by definition of $\SN{bool}{\true}$.
+\case{$\Gamma \vdash \true : bool$} similar to the \true{} case.
+\case{\TVar}\\
+We have: 
+\begin{description}
+  \item $\gamma \models \Gamma$
+\end{description}
+We need to show:
+\begin{description}
+  \item $\SN{\tau}{\gamma(x)}$
+\end{description}
+This case follows from the definition of $\Gamma \models \gamma$. We know that $x$ is well-typed, so it is in the domain of $\Gamma$. From the definition of $\Gamma \models \gamma$ we then get $\SN{\Gamma(x)}{\gamma(x)}$. From well-typedness of $x$ we have $\Gamma(x) = \tau$ which then gives us what we needed to show.
+\case{if} left as an exercise.
+\case{\TApp}\\
+We have: 
+\begin{description}
+  \item $\gamma \models \Gamma$
+\end{description}
+We need to show:
+\begin{description}
+  \item $\SN{\tau}{\gamma(e_1 \; e_2)} \equiv \SN{\tau}{\gamma(e_1) \; \gamma(e_2)}$
+\end{description}
+By induction hypothesis we get
+\begin{align}
+  &\SN{\tarrow{\tau_2}{\tau}}{\gamma(e_1)} \\
+  &\SN{\tau_2}{\gamma(e_2)}
+\end{align}
+If we use the 3rd property of (1), $\forall e'. \; \SN{\tau_1}{e'} \Rightarrow \SN{\tau_2}{e \; e'}$, instantiated with (2) we get $\SN{\tau_2}{\gamma(e_2)}$ which is what we wanted.
+\case{\TAbs} \\
+We have: 
+\begin{description}
+  \item $\gamma \models \Gamma$
+\end{description}
+We need to show:
+\begin{description}
+  \item $\SN{\tarrow{\tau_1}{\tau_2}}{\gamma(\tlabs{x}{\tau_1}{e})} \equiv \SN{\tarrow{\tau_1}{\tau_2}}{\tlabs{x}{\tau_1}{\gamma(e)}}$
+\end{description}
+Our induction hypothesis in this case says:
+\[
+  \Gamma,x:\tau_1 \vdash e : \tau_2 \wedge \gamma' \models \Gamma, x : \tau_1 \Rightarrow \SN{\tau_2}{\gamma'(e)}
+\]
+It suffices to show the following three things:
+\begin{enumerate}
+\item $\mtenv \vdash \tlabs{x}{\tau_1}{\gamma(e)} : \tarrow{\tau_1}{\tau_2}$
+\item $\tlabs{x}{\tau_1}{\gamma(e)} \Downarrow$
+\item $\forall e'. \SN{\tau_1}{e'} \Rightarrow \SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'}$
+\end{enumerate}
+1 follows from the substitution lemma and then pushing the substitution in under the lambda\footnote{Substitution has not been properly defined here, but one can find a sound definition in Pierce's Types and Programming Languages.}. 2 is okay as the lambda-abstraction is a value. 
+
+It only remains to show 3. To do this we want to somehow apply the induction hypothesis. To do that we need a $\gamma'$ such that $\gamma' \models \Gamma, x:\tau_1$. As we already have $\gamma$ and $\gamma \models \Gamma$, so our $\gamma'$ should probably have have the form $\gamma' = \gamma[x \mapsto v_?]$ for some $v_?$.
+
+Let $e'$ be given and assume $\SN{\tau_1}{e'}$. We then need to show $\SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'}$. From $\SN{\tau_1}{e'}$ it follows that $e' \Downarrow v'$. $v'$ is a good candidate for $v_?$ so let $v_? = v'$. From the forward part of the preservation lemma we can further conclude $\SN{\tau_1}{v'}$. We use this to conclude $\gamma[x\mapsto v'] \models \Gamma, x:\tau_1$ which we use with the assumption $\Gamma,x:\tau_1 \vdash e : \tau_2$ to instantiate the induction hypothesis and get $\SN{\tau_2}{\gamma[x\mapsto v'](e)}$.
+
+Now consider the following evaluation:
+\begin{align*}
+  (\tlabs{x}{\tau_1}{\gamma(e)}) \; e' & \evaltos (\tlabs{x}{\tau_1}{\gamma(e)}) \; v' \\
+                                       & \evalto \gamma(e)[v'/x] \equiv 
+                                                   \gamma[x \mapsto v'](e)
+\end{align*}
+We already concluded that $e' \evaltos v'$ which corresponds to the first series of steps. We can then do a $\beta$-reduction to take the next step and finally we get something that is equivalent to $\gamma[x \mapsto v'](e)$. That is we have the evaluation
+\[
+(\tlabs{x}{\tau_1}{\gamma(e)}) \; e' \evaltos \gamma[x \mapsto v'](e)
+\]
+If we use this with $\SN{\tau_2}{\gamma[x\mapsto v'](e)}$ and that  is well-typed\footnote{Follows from $\SN{\tau_1}{e'}$, the assumption $\Gamma \vdash \tlabs{x}{\tau_1}{e} : \tarrow{\tau_1}{\tau_2}$, $\gamma \models \Gamma$, the substitution lemma and the typing rule for lambda-abstractions} the backwards part of the $\SNPred$ preservation lemma we get \SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'} which is exactly what we needed to show.
+
+
+\end{proof}
+\subsection*{Exercises}
+\begin{enumerate}
+\item Prove $\SNPred$ preserved by forward/backward reduction
+\item Prove the substitution lemma
+\item Prove the if-case of ``\circled{b} Generalized''
+\item Extend the language with pairs and do the proves
+\end{enumerate}
+\clearpage
+\section*{Lecture 2, Type Safety}
+The goal of this lecture was to proof type safety for STLC using logical relations. First we need to consider what type safety is. The classical mantra for type safety is ``Well-typed programs do not \emph{go wrong}.'' It depends on our language and type system what \emph{go wrong} means, but in our case a program has \emph{gone wrong}, if it is stuck\footnote{If we consider language-based security for information flow control the notion of \emph{go wrong} would then be that there is an undesired flow of information}. 
+
+\subsection*{Type Safety for STLC}
+\begin{stlctypesafety}[Type Safety for STLC]
+  If $\mtenv \vdash e : \tau$ and $e \evaltos e'$ then $\val(e)$ or $\exists e'. \; e \evalto e'$.
+\end{stlctypesafety}
+Traditionally type safety is proven by two lemmas, progress and preservation.
+\begin{progress}[Progress]
+  If $\mtenv \vdash e : \tau$ then $\val(e)$ or $\exists e'. \; e \evalto e'$.
+\end{progress}
+Progress is normally proved by induction on the typing derivation.
+\begin{preservation}[Preservation]
+  If $\mtenv \vdash e : \tau$ and $e \evalto e'$ then $\mtenv \vdash e' : \tau$.
+\end{preservation}
+Preservation is normally proved by induction on the evaluation.
+Preservation is also known as \emph{subject reduction}. Progress and preservation talks about one step, so to prove type safety we have to do induction on the evaluation. Here we do not want to prove type safety the traditional way, we want to prove it using a logical predicate. We use a logical predicate rather than a logical relation, because type safety is a unary property.
+
+The notation will here further be changed compared to the one from lecture 1. We define the logical predicate in two parts: a value predicate and an expression predicate. We define the value predicate as:
+\begin{align*}
+  \vpred{bool} & = \{ \true, \false \}\\
+  \vpred{\tarrow{\tau_1}{\tau_2}} & = \{\tlabs{x}{\tau_1}{e} \vbar \forall v \in \curly{V}\sem{\tau_1}.\; e [v/x] \in \curly{E}\sem{\tau_2}\}
+\end{align*}
+We define the expression predicate as:
+\[
+  \epred{\tau} = \{e \vbar \forall e'. \; e \evaltos e' \wedge \irred(e') \Rightarrow e' \in \curly{V}\sem{\tau}
+\]
+\footnote{Notice that neither \vpred{\tau} nor \epred{\tau} requires well-typedness. Normally this would be a part of the predicate, but as the goal is to prove type safety we do not want it as a part of the predicate. In fact, if we did include a well-typedness requirement, then we would end up having to prove preservation for some of the proofs to go through.}The predicate $\irred$ is defined as:
+\[
+  \irred(e) \eqdef \not\exists e'. \; e \evalto e'
+\]
+The sets are defined on the structure of the types. \vpred{\tarrow{\tau_1}{\tau_2}} contains \epred{\tau_2}, but \epred{\tau_2} uses $\tau_2$ directly, so the definition is structurally well-founded. 
+
+To prove safety we first define a new predicate, $\safe$:
+\[
+  \safe(e) \eqdef \forall e' . \; e \evaltos e' \Rightarrow \val(e') \vee \exists e
+''. \; e' \evaltos e''
+\]
+We are now ready to prove type safety. Just like we did for strong normalization, we prove type safety in two steps:
+\[
+  \circled{a} \quad \mtenv \vdash e : \tau \Rightarrow e \in \epred{\tau}
+\]
+\[
+  \circled{b} \quad e \in \epred{\tau} \Rightarrow \safe(e)
+\]
+Rather than proving \circled{a} directly we prove a more general theorem and get \circled{a} as a corollary. But we are not yet in a position to state the theorem. First we need to define define the interpretation of type environments:
+\begin{align*}
+  \gpred{\bullet} & = \{ \emptyset \} \\
+  \gpred{\Gamma,x:\tau} & = \{\gamma[x \mapsto v] \vbar \gamma \in \gpred{\Gamma} \wedge v \in \vpred{\tau}\}
+\end{align*}
+Further we need to define semantic type safety:
+\[
+  \Gamma \models e : \tau \eqdef \forall \gamma \in \gpred{\Gamma} . \; \gamma(e) \in \epred{\tau}
+\]
+We can now define our generalized version of \circled{a}. 
+\begin{btypesafety}[Fundemental Property]
+  If $\Gamma \vdash e : \tau$ then $\Gamma \models e : \tau$
+\end{btypesafety}
+A theorem like this would typically be the first you prove after a logical relation has been defined. The theorem says that every syntactic type safety implies semantic type safety. 
+
+We will start by proving the easy part, namely \circled{b}.
+\begin{proof}[Proof. (\circled{b})]
+Suppose $e \evaltos e'$ for some $e'$, then we need to show $\val(e')$ or $\exists e''. \; e' \evalto e''$. Now either $\neg \irred(e')$ or $\irred(e')$.
+\case{$\neg \irred(e')$} this case follows directly from the definition of $\irred$. $\irred(e')$ is defined as $\not \exists e''. \; e' \evalto e''$ and as the assumption is $\neg \irred(e')$ we get $\exists e''. \; e' \evalto e''$.
+\case{$irred(e')$} By assumption we have $\bullet \models e : \tau$. As the typing context is empty we choose the empty substitution and get $e \in \epred{\tau}$. We now use the definition of $e \in \epred{\tau}$ with what we supposed, $e \evaltos e'$, and the case assumption, $\irred(e')$, to conclude $e' \in \vpred{\tau}$. As $e'$ is in the value interpretation of $\tau$ we can conclude $\val(e')$. 
+\end{proof}
+\begin{proof}[Proof. (Fundemental Property)] Proof by induction on the typing judgement.
+  \case{\TAbs} \\
+We need to show $\Gamma \models \tlabs{x}{\tau_1}{e} : \tarrow{\tau_1}{\tau_2}$. First suppose $\gamma \in \gpred{\Gamma}$. Thenit suffices to show
+\[
+  \gamma(\tlabs{x}{\tau_1}{e}) \in \epred{\tarrow{\tau_1}{\tau_2}} \equiv
+  (\tlabs{x}{\tau_1}{\gamma(e)}) \in \epred{\tarrow{\tau_1}{\tau_2}}
+\]
+Now suppose that $\tlabs{x}{\tau_1}{\gamma(e)} \evaltos e'$ and $\irred(e')$. We then need to show $e' \in \vpred{\tarrow{\tau_1}{\tau_2}}$. Since $\tlabs{x}{\tau_1}{\gamma(e)}$ is a value it is irreducible, and we can conclude it took no steps. In other words $e' = \tlabs{x}{\tau_1}{\gamma(e)}$. So we need to show $\tlabs{x}{\tau_1}{\gamma(e)} \in \vpred{\tarrow{\tau_1}{\tau_2}}$. Now suppose $v \in \vpred{\tau_1}$ then we need to show $\gamma(e)[v/x] \in \epred{\tau_2}$.
+
+Now let us keep the above proof goal in mind and consider the induction hypothesis. From the induction hypothesis we have:
+\[
+  \Gamma, x: \tau_1 \models e : \tau_2
+\]
+Instantiate this with $\gamma[x \mapsto v]$. We have $\gamma[x \mapsto v] \in \gpred{\Gamma, x : \tau_1}$ because we started by supposing $\gamma \in \gpred{\Gamma}$ and we also had $v \in \vpred{\tau_2}$. The instantiation gives us $\gamma[x \mapsto v] e \in  \epred{\tau_2} \equiv \gamma(e)[v/x] \in \epred{\tau_2}$. Now recall our proof goal, we now have what we wanted to show.
+\case{\TApp} show this case as an exercise.
+
+The remaining cases were not proved during the lecture.
+\end{proof}
+
+Now consider what happens if we add pairs to the language.
+
+\subsection*{Exercises}
+\begin{enumerate}
+\item Prove the TApp case of the Fundemental Property
+\end{enumerate}
+
+\end{document}
