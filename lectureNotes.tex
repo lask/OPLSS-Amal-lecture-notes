@@ -90,7 +90,7 @@
 
 %Lecture 1:
 \newtheorem*{strnorm}{Theorem}
-\newtheorem*{bstrnorm}{Theorem}
+\newtheorem*{astrnorm}{Theorem}
 \newtheorem*{substlem}{Lemma}
 \newtheorem*{forback}{Lemma}
 %Lecture 2:
@@ -123,18 +123,16 @@ Values:
 \]
 Evaluation contexts:
 \[
-    E    ::= [] \vbar \eif{E}{e}{e} \vbar E \; e_2 \vbar v \; E
+    E    ::= [] \vbar \eif{E}{e}{e} \vbar E \; e \vbar v \; E
 \]
 Evaluations:
 \begin{align*}
-  & \eif{\true}{e_1}{e_1} \evalto e_1 \\
-  & \eif{\false}{e_1}{e_1} \evalto e_2 \\
+  & \eif{\true}{e_1}{e_2} \evalto e_1 \\
+  & \eif{\false}{e_1}{e_2} \evalto e_2 \\
   & \tlabs{x}{\tau}{e} \; v \evalto \subst{e}{v}{x} \\
-\end{align*}
-\[
-  \inferrule*[]{e \evalto e'}
+  & \inferrule*[]{e \evalto e'}
                {E[e] \evalto E[e']}
-\]
+\end{align*}
 Typing Contexts:
 \[
   \Gamma ::= \dot \bar \Gamma , x : \tau
@@ -152,7 +150,7 @@ Typing rules:
                             {\Gamma \vdash \false : bool} 
 \hspace{2cm}
   \inferrule*[right=T-If]{\Gamma \vdash e : bool \and \Gamma \vdash e_1 : \tau \and \Gamma \vdash e_2 : \tau}
-                         {\Gamma \vdash \eif{e}{e_1}{e_2}}
+                         {\Gamma \vdash \eif{e}{e_1}{e_2} : \tau}
 \]  
 \[
   \TAbs
@@ -173,13 +171,13 @@ Proof method to establish properties.
     \[
     f: \forall \alpha. \; \tarrow{\alpha}{\alpha}
     \]
-    Cannot inspect $\alpha$ as it has no idea which type it will be $\leadsto$ this function must be $id$.
+    Cannot inspect $\alpha$ as it has no idea which type it will be, therefore this function must be $id$.
     \[
     \forall. \; \tarrow{int}{\alpha}
     \]
-    A function with this type does not exist (the function would need to return something of type $\alpha$, but it only has something of type $int$ to work with, so it cannot return a value of the proper type).
+    A function with this type does not exist (the function would need to return something of type $\alpha$, but it only has something of type $int$ to work with, so it cannot possibly return a value of the proper type).
   \item Security-Typed Languages (for Information Flow Control (IFC))\\
-        Example: All types in the code snippet below are labeled. A type can be labeled with either $L$ for \emph{low} or $H$ for \emph{high}. We do not want any flow from variables with a \emph{high} labeled type to a \emph{low} labeled type. The following is an example of \emph{explicit flow} of information:
+        Example: All types in the code snippet below are labeled with their security level. A type can be labeled with either $L$ for \emph{low} or $H$ for \emph{high}. We do not want any flow from variables with a \emph{high} labeled type to a variable with a \emph{low} labeled type. The following is an example of an \emph{explicit flow} of information:
         \begin{lstlisting}[escapeinside={@}{@}]
   x : int@$^L$@
   y : int@$^H$@
@@ -196,7 +194,7 @@ How do we then argue a program is secure? Non-interference:
   & \vdash P : \tarrow{int^L \times int^H}{int^L} \\
   & P(v_L,v_{H1}) \approx_L P(v_L,v_{H2})
 \end{align*}
-If we run $P$ with the same \emph{low} value and with two different \emph{high} values, then the result of the two runs of the program are equal. That is the \emph{low} result does not depend on \emph{high} values.
+If we run $P$ with the same \emph{low} value and with two different \emph{high} values, then the low result of the two runs of the program should be equal. That is the \emph{low} result does not depend on \emph{high} values.
   \end{itemize}
 \end{itemize}
 \subsection*{Categories of Logical Relations}
@@ -205,7 +203,7 @@ If we run $P$ with the same \emph{low} value and with two different \emph{high} 
 \hline
   (Unary)                & (Binary)             \\
   $P_\tau(e)$             & $R\tau(e_1,e_2)$     \\
-  - One property         & - Program Equivalence\footnote{Was not in my notes.}\\
+  - One property         & - Program Equivalence\\ %\footnote{Was not in my notes.}
   - Strong normalization & \\
   - Type safety          & \\
 \end{tabular}
@@ -221,8 +219,8 @@ What we want to prove is:
   If $\mtenv \vdash e : \tau$ then $e \Downarrow$
 \end{strnorm}
 \begin{proof} 
-\warning{This proof gets stuck and is not complete. It is included to motivate the logical relation.}
-By induction on the structure of the typing derivation.
+\warning{This proof gets stuck and is not complete. It is included to motivate the use of a logical relation.}
+Induction on the structure of the typing derivation.
 \case{$\mtenv \vdash \true : bool$} this term has already terminated.
 \case{$\mtenv \vdash \false : bool$} same as for \true.
 \case{$\mtenv \vdash \eif{e}{e_1}{e_2} : \tau$} simple, but requires the use of canonical forms of bool.
@@ -237,24 +235,22 @@ By the induction hypothesis we get $e_1 \Downarrow v_1$ and $e_2 \Downarrow v_2$
 Here we run into an issue as we do not know anything about $e'$. Our induction hypothesis is not strong enough.\footnote{:(}
 \end{proof}
 \subsubsection*{A logical predicate for strongly normalizing expressions}
-We want to define a logical predicate, \SN{\tau}{e}. In English $\SN{\tau}{e}$ is the set of expressions of type $\tau$ that are strongly normalizing.
+We want to define a logical predicate, \SN{\tau}{e}. We want \SN{\tau}{e} to be the set of expressions of type $\tau$ that are strongly normalizing, but let us first consider what properties we in general want a logical relation to have.
 
-In general for a logical predicate, $P_\tau(e)$, we want an expression, $e$, in accepted by this predicate to satisfy the following properties:
+In general for a logical predicate, $P_\tau(e)$, we want an expression, $e$, in accepted by this predicate to satisfy the following properties\footnote{Note: when we later want to prove type safety we do not want well-typedness to be a property of the predicate.}:
 \begin{enumerate}
-\item $\mtenv \vdash e : \tau$\footnote{Note: when we later want to prove type safety we do not want well-typedness to be a property of the predicate.}
-\item the property we wish $e$ to have. In this case it would be: $e$ is strongly normalizing.
+\item $\mtenv \vdash e : \tau$
+\item The property we wish $e$ to have. In this case it would be: $e$ is strongly normalizing.
 \item The condition is preserved by eliminating forms.
 \end{enumerate}
-
 With the above in mind we define the strongly normalizing predicate as follows:
 \begin{align*}
   \SN{bool}{e} & \Leftrightarrow \mtenv \vdash e : bool \; \wedge \; e \Downarrow \\
   \SN{\tarrow{\tau_1}{\tau_2}}{e} & \Leftrightarrow \mtenv \vdash e : \tarrow{\tau_1}{\tau_2} \; \wedge \; e \Downarrow \; \wedge \; (\forall e'. \; \SN{\tau_1}{e'} \Rightarrow \SN{\tau_2}{e \; e'})\\
 \end{align*}
-It is here important to consider whether the logical predicate is well-founded. \SN{\tau}{e} is defined by structural induction %TODO: is it really this? Check video.
-over $\tau$, so it is well-founded.
+It is here important to consider whether the logical predicate is well-founded. \SN{\tau}{e} is defined over the structure of $\tau$, so it is indeed well-founded.
 \subsubsection*{Strongly normalizing using a logical relation}
-We are now ready to show strong normalization using \SN{\tau}{e}. The proof is in two steps:
+We are now ready to show strong normalization using \SN{\tau}{e}. The proof is done in two steps:
 \[
 \circled{a} \quad \mtenv \vdash e : \tau \Rightarrow \SN{\tau}{e}
 \]
@@ -270,28 +266,28 @@ We could try to prove \circled{a} by induction over $\mtenv \vdash e : \tau$, bu
 \TAbs
 \]
 gives issues. What we instead do is to prove a generalization of \circled{a}
-\begin{bstrnorm}[\circled{b} Generalized]
+\begin{astrnorm}[\circled{a} Generalized]
   If $\Gamma \vdash e : \tau$ and $\gamma \models \Gamma$ then $\SN{\tau}{\gamma(e)}$
-\end{bstrnorm}
-$\gamma$ is a substitution, $\gamma = \{x_1 \mapsto v_1, \dots , x_n \mapsto v_n\}$.
+\end{astrnorm}
+Here $\gamma$ is a substitution, $\gamma = \{x_1 \mapsto v_1, \dots , x_n \mapsto v_n\}$.
 
-In English the theorem reads: If $e$ is well-typed wrt some type $\tau$ and we have some substitution that satisfy the typing environment, then is we close of $e$, then it is in $\SNPred$.
+In English the theorem reads: If $e$ is well-typed wrt some type $\tau$ and we have some substitution that satisfy the typing environment, then if we close of $e$ with $\gamma$, then this closed expression is in $\SNPred_\tau$.
 
-$\gamma \models \Gamma$ is read ``the substitution, $\gamma$, satisfies the type environment, $Gamma$,'' and it is defined as follows:
+$\gamma \models \Gamma$ is read ``the substitution, $\gamma$, satisfies the type environment, $\Gamma$.'' It is defined as follows:
 \[
   \gamma \models \Gamma \eqdef \dom(\gamma) = \dom(\Gamma) \; \wedge \; 
                  \forall x \in \dom(\Gamma). \; \SN{\Gamma(x)}{\gamma(x)}
 \]
 
-To prove the generalized theorem we further need two lemmas
+To prove the generalized theorem we need further two lemmas
 \begin{substlem}[Substitution Lemma]
   If $\Gamma \vdash e : \tau$ and $\gamma \models \Gamma$ then $\mtenv \vdash \gamma (e) : \tau$
 \end{substlem}
 \begin{forback}[$\SNPred$ preserved by forward/backward reduction]
   Suppose $\mtenv \vdash e : \tau$ and $e \evalto e'$
   \begin{enumerate}
-  \item $\SN{\tau}{e'}$ then $\SN{\tau}{e}$
-  \item $\SN{\tau}{e}$ then $\SN{\tau}{e'}$
+  \item if $\SN{\tau}{e'}$ then $\SN{\tau}{e}$
+  \item if $\SN{\tau}{e}$ then $\SN{\tau}{e'}$
   \end{enumerate}
 \end{forback}
 \begin{proof}
@@ -300,7 +296,7 @@ To prove the generalized theorem we further need two lemmas
 \begin{proof}[Proof. (Substitution Lemma)] 
   Probably also left as an exercise (not proved during the lecture).
 \end{proof}
-\begin{proof}[Proof. (\circled{b} Generalized)] Proof by induction on $\Gamma \vdash e : \tau$.
+\begin{proof}[Proof. (\circled{a} Generalized)] Proof by induction on $\Gamma \vdash e : \tau$.
 \case{$\Gamma \vdash \true : bool$} \\
 We have: 
 \begin{description}
@@ -311,7 +307,7 @@ We need to show:
   \item $\SN{bool}{\gamma(\true)}$
 \end{description}
 If we do the substitution we just need to show $\SN{bool}{\true}$ which is true by definition of $\SN{bool}{\true}$.
-\case{$\Gamma \vdash \true : bool$} similar to the \true{} case.
+\case{$\Gamma \vdash \false : bool$} similar to the \true{} case.
 \case{\TVar}\\
 We have: 
 \begin{description}
@@ -322,7 +318,7 @@ We need to show:
   \item $\SN{\tau}{\gamma(x)}$
 \end{description}
 This case follows from the definition of $\Gamma \models \gamma$. We know that $x$ is well-typed, so it is in the domain of $\Gamma$. From the definition of $\Gamma \models \gamma$ we then get $\SN{\Gamma(x)}{\gamma(x)}$. From well-typedness of $x$ we have $\Gamma(x) = \tau$ which then gives us what we needed to show.
-\case{if} left as an exercise.
+\case{$\Gamma \vdash \eif{e}{e_1}{e_2} : \tau$} left as an exercise.
 \case{\TApp}\\
 We have: 
 \begin{description}
@@ -337,7 +333,7 @@ By induction hypothesis we get
   &\SN{\tarrow{\tau_2}{\tau}}{\gamma(e_1)} \\
   &\SN{\tau_2}{\gamma(e_2)}
 \end{align}
-If we use the 3rd property of (1), $\forall e'. \; \SN{\tau_1}{e'} \Rightarrow \SN{\tau_2}{e \; e'}$, instantiated with (2) we get $\SN{\tau_2}{\gamma(e_2)}$ which is what we wanted.
+If we use the 3rd property of (1), $\forall e'. \; \SN{\tau_1}{e'} \Rightarrow \SN{\tau_2}{\gamma(e) \; e'}$, instantiated with (2), then we get $\SN{\tau_2}{\gamma(e_1) \; \gamma(e_2)}$ which is what we wanted.
 \case{\TAbs} \\
 We have: 
 \begin{description}
@@ -347,9 +343,9 @@ We need to show:
 \begin{description}
   \item $\SN{\tarrow{\tau_1}{\tau_2}}{\gamma(\tlabs{x}{\tau_1}{e})} \equiv \SN{\tarrow{\tau_1}{\tau_2}}{\tlabs{x}{\tau_1}{\gamma(e)}}$
 \end{description}
-Our induction hypothesis in this case says:
+Our induction hypothesis in this case reads:
 \[
-  \Gamma,x:\tau_1 \vdash e : \tau_2 \wedge \gamma' \models \Gamma, x : \tau_1 \Rightarrow \SN{\tau_2}{\gamma'(e)}
+  \Gamma,x:\tau_1 \vdash e : \tau_2 \; \wedge \; \gamma' \models \Gamma, x : \tau_1 \quad \Rightarrow \quad \SN{\tau_2}{\gamma'(e)}
 \]
 It suffices to show the following three things:
 \begin{enumerate}
@@ -357,9 +353,9 @@ It suffices to show the following three things:
 \item $\tlabs{x}{\tau_1}{\gamma(e)} \Downarrow$
 \item $\forall e'. \SN{\tau_1}{e'} \Rightarrow \SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'}$
 \end{enumerate}
-1 follows from the substitution lemma and then pushing the substitution in under the lambda\footnote{Substitution has not been properly defined here, but one can find a sound definition in Pierce's Types and Programming Languages.}. 2 is okay as the lambda-abstraction is a value. 
+If we use the substitution lemma, and then push the $\gamma$ in under the $\lambda$-abstraction, then we get 1\footnote{Substitution has not been formally defined here, but one can find a sound definition in Pierce's Types and Programming Languages.}. 2 is okay as the lambda-abstraction is a value. 
 
-It only remains to show 3. To do this we want to somehow apply the induction hypothesis. To do that we need a $\gamma'$ such that $\gamma' \models \Gamma, x:\tau_1$. As we already have $\gamma$ and $\gamma \models \Gamma$, so our $\gamma'$ should probably have have the form $\gamma' = \gamma[x \mapsto v_?]$ for some $v_?$.
+It only remains to show 3. To do this we want to somehow apply the induction hypothesis. To do that we need a $\gamma'$ such that $\gamma' \models \Gamma, x:\tau_1$. We already have $\gamma$ and $\gamma \models \Gamma$, so our $\gamma'$ should probably have have the form $\gamma' = \gamma[x \mapsto v_?]$ for some $v_?$.
 
 Let $e'$ be given and assume $\SN{\tau_1}{e'}$. We then need to show $\SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'}$. From $\SN{\tau_1}{e'}$ it follows that $e' \Downarrow v'$. $v'$ is a good candidate for $v_?$ so let $v_? = v'$. From the forward part of the preservation lemma we can further conclude $\SN{\tau_1}{v'}$. We use this to conclude $\gamma[x\mapsto v'] \models \Gamma, x:\tau_1$ which we use with the assumption $\Gamma,x:\tau_1 \vdash e : \tau_2$ to instantiate the induction hypothesis and get $\SN{\tau_2}{\gamma[x\mapsto v'](e)}$.
 
@@ -373,7 +369,7 @@ We already concluded that $e' \evaltos v'$ which corresponds to the first series
 \[
 (\tlabs{x}{\tau_1}{\gamma(e)}) \; e' \evaltos \gamma[x \mapsto v'](e)
 \]
-If we use this with $\SN{\tau_2}{\gamma[x\mapsto v'](e)}$ and that  is well-typed\footnote{Follows from $\SN{\tau_1}{e'}$, the assumption $\Gamma \vdash \tlabs{x}{\tau_1}{e} : \tarrow{\tau_1}{\tau_2}$, $\gamma \models \Gamma$, the substitution lemma and the typing rule for lambda-abstractions} the backwards part of the $\SNPred$ preservation lemma we get \SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'} which is exactly what we needed to show.
+If we use this with $\SN{\tau_2}{\gamma[x\mapsto v'](e)}$, the fact that $\tlabs{x}{\tau_1}{\gamma(e)}) \; e'$ is well-typed\footnote{Follows from $\SN{\tau_1}{e'}$, the assumption $\Gamma \vdash \tlabs{x}{\tau_1}{e} : \tarrow{\tau_1}{\tau_2}$, $\gamma \models \Gamma$, the substitution lemma and the typing rule for lambda-abstractions}, and the backwards part of the $\SNPred$ preservation lemma, then we get \SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'} which is exactly what we needed to show.
 
 
 \end{proof}
@@ -381,8 +377,8 @@ If we use this with $\SN{\tau_2}{\gamma[x\mapsto v'](e)}$ and that  is well-type
 \begin{enumerate}
 \item Prove $\SNPred$ preserved by forward/backward reduction
 \item Prove the substitution lemma
-\item Prove the if-case of ``\circled{b} Generalized''
-\item Extend the language with pairs and do the proves
+\item Prove the if-case of ``\circled{a} Generalized''
+\item Extend the language with pairs and do the proofs
 \end{enumerate}
 \clearpage
 \section*{Lecture 2, Type Safety}
@@ -469,9 +465,16 @@ Instantiate this with $\gamma[x \mapsto v]$. We have $\gamma[x \mapsto v] \in \g
 
 The remaining cases were not proved during the lecture.
 \end{proof}
+Now consider what happens if we add pairs to the language. 
+%TODO: Clarify what additions to STLC are needed for pairs.
+We need to add a clause to the value relation:
+\[
+  \vpred{\tau_1 \times \tau_2} = \{<v_1,v_2> \vbar v_1 \in \vpred{\tau_1} \wedge v_2 \in \vpred{\tau_2}\}
+\]
+There is nothing suprising in this addition to the value relation, and it should not be a challenge to show the pair case of the proofs.
+%omitted: 3rd part of LR recipe is mostly about functions - Contravariance problem.
 
-Now consider what happens if we add pairs to the language.
-
+If we 
 \subsection*{Exercises}
 \begin{enumerate}
 \item Prove the TApp case of the Fundemental Property
