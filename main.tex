@@ -1,0 +1,188 @@
+% Dokumentklassen sættes til memoir.
+% Manual: http://ctan.org/tex-archive/macros/latex/contrib/memoir/memman.pdf
+\documentclass[a4paper,10pt,fleqn]{article}
+\usepackage[a4paper]{geometry}
+% Danske udtryk (fx figur og tabel) samt dansk orddeling og fonte med
+
+% danske tegn. Hvis LaTeX brokker sig over æ, ø og å skal du udskifte
+% "utf8" med "latin1" eller "applemac". 
+\usepackage[utf8]{inputenc}
+%\usepackage[danish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e} 
+\usepackage{color}
+\usepackage{hyperref}
+
+% Matematisk udtryk, fede symboler, theoremer og fancy ting (fx kædebrøker)
+\usepackage{amsmath,amssymb}
+\usepackage{stmaryrd}
+\usepackage{bm}
+\usepackage{amsthm}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{positioning}
+\usetikzlibrary{snakes}
+\usetikzlibrary{decorations.pathreplacing}
+\usepackage{mathtools}
+% Kodelisting. Husk at læse manualen hvis du vil lave fancy ting.
+% Manual: http://mirror.ctan.org/macros/latex/contrib/listings/listings.pdf
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage{bussproofs}
+\usepackage{mathpartir}
+ 
+% Fancy ting med enheder og datatabeller. Læs manualen til pakken
+% Manual: http://www.ctan.org/tex-archive/macros/latex/contrib/siunitx/siunitx.pdf
+%\usepackage{siunitx}
+% Indsættelse af grafik.
+\usepackage{graphicx}
+\usepackage{xcolor}
+%\usepackage{bussproofs}
+
+% Reaktionsskemaer. Læs manualen for at se eksempler.
+% Manual: http://www.ctan.org/tex-archive/macros/latex/contrib/mhchem/mhchem.pdf
+%\usepackage[version=3]{mhchem}
+
+\setlength{\mathindent{1cm}}
+
+\newcommand{\sem}[1]{\ensuremath{\llbracket #1 \rrbracket}}
+\newcommand{\curly}[1]{\ensuremath{\mathcal{#1}}}
+
+\DeclareMathOperator{\FTV}{FTV}
+\DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\safe}{safe}
+\DeclareMathOperator{\irred}{irred}
+\DeclareMathOperator{\SNPred}{SN}
+\DeclareMathOperator{\val}{Val}
+\DeclareMathOperator{\fst}{fst}
+\DeclareMathOperator{\snd}{snd}
+\DeclareMathOperator{\inl}{inl}
+\DeclareMathOperator{\inr}{inr}
+\DeclareMathOperator{\scase}{case}
+\DeclareMathOperator{\caseof}{of}
+\DeclareMathOperator{\fold}{fold}
+\DeclareMathOperator{\unfold}{unfold}
+
+\newcommand{\evalto}{\ensuremath{\mapsto}}
+\newcommand{\evaltos}[1][*]{\ensuremath{\evalto^{#1}}}
+\newcommand{\warning}[1]{{\color{red} !` #1 !} \\}
+\newcommand{\mtenv}{\ensuremath{\bullet}}
+\newcommand{\case}[1]{\\{\bf Case} #1,}
+\newcommand{\eqdef}{\ensuremath{ \; \stackrel{\mathclap{\normalfont\mbox{def}}}{=} \;}}
+\newcommand{\subst}[3]{\ensuremath{\ensuremath{#1[#2/#3]}}}
+\newcommand{\labs}[2]{\ensuremath{\lambda #1 . \; #2}}
+\newcommand{\tlabs}[3]{\ensuremath{\lambda #1 : #2 . \; #3}}
+\newcommand{\tLabs}[2][\alpha]{\ensuremath{\Lambda #1 . \; #2}}
+\newcommand{\vbar}{\ensuremath{\; | \;}}
+\newcommand{\tarrow}[2]{\ensuremath{ #1 \rightarrow #2}}
+\newcommand{\eif}[3]{\ensuremath{ \text{if}\; #1 \; \text{then} \; #2 \; \text{else} \; #3}}
+\newcommand{\true}{\ensuremath{\text{true}}}
+\newcommand{\false}{\ensuremath{\text{false}}}
+\newcommand{\SN}[2]{\ensuremath{\SNPred_{#1}(#2)}}
+
+\newcommand{\pred}[2]{\ensuremath{\curly{#1}\sem{#2}}}
+\newcommand{\pres}[3]{\ensuremath{\curly{#1}_{#2}\sem{#3}}}
+
+\newcommand{\epred}[1]{\ensuremath{\pred{E}{#1}}}
+\newcommand{\epres}[2][k]{\ensuremath{\pres{E}{#1}{#2}}}
+
+\newcommand{\vpred}[1]{\ensuremath{\pred{V}{#1}}}
+\newcommand{\vpres}[2][k]{\ensuremath{\pres{V}{#1}{#2}}}
+
+\newcommand{\gpred}[1]{\ensuremath{\pred{G}{#1}}}
+\newcommand{\gpres}[2][k]{\ensuremath{\pres{G}{#1}{#2}}}
+
+\newcommand{\sub}[3]{\ensuremath{#1[^{#2}/_{#3}]}}
+
+\newcommand*{\circled}[1]{\tikz[baseline=(char.base)]{
+            \node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+\newcommand{\TTrue}{\ensuremath{
+    \inferrule*[right=T-True]{ }
+               {\Gamma \vdash \true : bool}}}
+
+\newcommand{\TFalse}{\ensuremath{
+    \inferrule*[right=T-False]{ }
+               {\Gamma \vdash \false : bool}}}
+
+
+\newcommand{\TVar}{\ensuremath{
+    \inferrule*[right=T-Var]{\Gamma(x) = \tau}
+                            {\Gamma \vdash x : \tau}}}
+\newcommand{\TIf}{\ensuremath{
+    \inferrule*[right=T-If]{\Gamma \vdash e : bool \and \Gamma \vdash e_1 : \tau \and \Gamma \vdash e_2 : \tau}
+               {\Gamma \vdash \eif{e}{e_1}{e_2} : \tau}}}
+\newcommand{\TApp}{\ensuremath{
+    \inferrule*[right=T-App]{\Gamma \vdash e_1 : \tarrow{\tau_2}{\tau} \and
+                            \Gamma \vdash e_2 : \tau_2}
+                           {\Gamma \vdash e_1 \; e_2 : \tau}}}
+
+\newcommand{\TAbs}{\ensuremath{\inferrule*[right=T-Abs]{\Gamma, x: \tau_1 \vdash e : \tau_2}
+                           {\Gamma \vdash \tlabs{x}{\tau_1}{e} : \tarrow{\tau_1}{\tau_2}}}}
+\newcommand{\TFold}{\ensuremath{
+    \inferrule*[right=T-Fold]{\Gamma \vdash e : \tau[\mu\alpha. \; \tau/\alpha]}
+                             {\Gamma \vdash \fold \; e : \mu\alpha. \; \tau}}}
+\newcommand{\TUnfold}{\ensuremath{
+    \inferrule*[right=T-Unfold]{\Gamma \vdash e : \mu\alpha. \; \tau}
+                               {\Gamma \vdash \unfold \; e : \tau[\mu\alpha. \; \tau/\alpha]}}}
+
+
+\newcommand{\FTTrue}{\ensuremath{
+    \inferrule*[right=T-True]{ \Delta \vdash \Gamma}
+               {\Gamma \vdash \true : bool}}}
+
+\newcommand{\FTFalse}{\ensuremath{
+    \inferrule*[right=T-False]{\Delta \vdash \Gamma }
+               {\Gamma \vdash \false : bool}}}
+
+\newcommand{\FTVar}{\ensuremath{
+    \inferrule*[right=T-Var]{\Gamma(x) = \tau \and \Delta \vdash \Gamma}
+                            {\Gamma \vdash x : \tau}}}
+\newcommand{\FTApp}{\ensuremath{
+    \inferrule*[right=T-App]{\Gamma \vdash e_1 : \tarrow{\tau_2}{\tau} \and
+                            \Gamma \vdash e_2 : \tau_2 \and 
+                            \Delta \vdash \Gamma}
+                           {\Gamma \vdash e_1 \; e_2 : \tau}}}
+
+\newcommand{\FTAbs}{\ensuremath{\inferrule*[right=T-Abs]{\Gamma, x: \tau_1 \vdash e : \tau_2 \and \Delta \vdash \Gamma}
+                           {\Gamma \vdash \tlabs{x}{\tau_1}{e} : \tarrow{\tau_1}{\tau_2}}}}
+\newcommand{\FTIf}{\ensuremath{
+    \inferrule*[right=T-If]{\Gamma \vdash e : bool \and 
+                            \Gamma \vdash e_1 : \tau \\ 
+                            \Gamma \vdash e_2 : \tau \and 
+                            \Delta \vdash \Gamma}
+               {\Gamma \vdash \eif{e}{e_1}{e_2} : \tau}}}
+
+
+
+\newtheorem*{theorem}{Theorem}
+\newtheorem*{lemma}{Lemma}
+%Lecture 1:
+\newtheorem*{strnorm}{Theorem}
+\newtheorem*{astrnorm}{Theorem}
+\newtheorem*{substlem}{Lemma}
+\newtheorem*{forback}{Lemma}
+%Lecture 2:
+\newtheorem*{stlctypesafety}{Theorem}
+\newtheorem*{progress}{Lemma}
+\newtheorem*{preservation}{Lemma}
+\newtheorem*{btypesafety}{Theorem}
+%Lecture 3:
+\newtheorem*{stlcmutypesafety}{Theorem}
+\newtheorem*{stlcmufundprop}{Theorem}
+\newtheorem*{monotonicity}{Lemma}
+
+\author{Lau\\lask@cs.au.dk}
+\title{OPLSS15, Notes for Amal Ahmed's lectures.}
+\begin{document}
+\maketitle
+The videos of the lectures of OPLSS 2015 can be found at \url{https://www.cs.uoregon.edu/research/summerschool/summer15/curriculum.html}
+\input{lec1}
+\input{lec2}
+\input{lec3}
+%\input{lec4}
+%\input{lec5}
+\end{document}
+
+
+
