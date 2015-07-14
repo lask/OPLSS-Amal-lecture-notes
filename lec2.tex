@@ -1,9 +1,9 @@
 \section*{Lecture 2, Type Safety}
-The goal of this lecture was to proof type safety for STLC using logical relations. First we need to consider what type safety is. The classical mantra for type safety is ``Well-typed programs do not \emph{go wrong}.'' It depends on our language and type system what \emph{go wrong} means, but in our case a program has \emph{gone wrong}, if it is stuck\footnote{If we consider language-based security for information flow control the notion of \emph{go wrong} would then be that there is an undesired flow of information}. 
+The goal of this lecture was to proof type safety for STLC using logical relations. First we need to consider what type safety is. The classical mantra for type safety is ``Well-typed programs do not \emph{go wrong}.'' It depends on our language and type system what \emph{go wrong} means, but in our case a program has \emph{gone wrong} if it is stuck\footnote{If we consider language-based security for information flow control the notion of \emph{go wrong} would be that there is an undesired flow of information}. 
 
 \subsection*{Type Safety for STLC}
 \begin{stlctypesafety}[Type Safety for STLC]
-  If $\mtenv \vdash e : \tau$ and $e \evaltos e'$ then $\val(e)$ or $\exists e'. \; e \evalto e'$.
+  If $\mtenv \vdash e : \tau$ and $e \evaltos e'$ then $\val(e')$ or $\exists e''. \; e' \evalto e''$.
 \end{stlctypesafety}
 Traditionally type safety is proven by two lemmas, progress and preservation.
 \begin{progress}[Progress]
@@ -14,25 +14,25 @@ Progress is normally proved by induction on the typing derivation.
   If $\mtenv \vdash e : \tau$ and $e \evalto e'$ then $\mtenv \vdash e' : \tau$.
 \end{preservation}
 Preservation is normally proved by induction on the evaluation.
-Preservation is also known as \emph{subject reduction}. Progress and preservation talks about one step, so to prove type safety we have to do induction on the evaluation. Here we do not want to prove type safety the traditional way, we want to prove it using a logical predicate. We use a logical predicate rather than a logical relation, because type safety is a unary property.
+Preservation is also known as \emph{subject reduction}. Progress and preservation talk about one step, so to prove type safety we have to do induction on the evaluation. Here we do not want to prove type safety the traditional way, we want to prove it using a logical predicate. We use a logical predicate rather than a logical relation, because type safety is a unary property.
 
-The notation will here further be changed compared to the one from lecture 1. We define the logical predicate in two parts: a value predicate and an expression predicate. We define the value predicate as:
+The notation will here be changed compared to the one from lecture 1. We define the logical predicate in two parts: a value interpretation and an expression interpretation. We define the value interpretation as:
 \begin{align*}
   \vpred{bool} & = \{ \true, \false \}\\
   \vpred{\tarrow{\tau_1}{\tau_2}} & = \{\tlabs{x}{\tau_1}{e} \vbar \forall v \in \curly{V}\sem{\tau_1}.\; e [v/x] \in \curly{E}\sem{\tau_2}\}
 \end{align*}
-We define the expression predicate as:
+We define the expression interpretation as:
 \[
-  \epred{\tau} = \{e \vbar \forall e'. \; e \evaltos e' \wedge \irred(e') \implies e' \in \curly{V}\sem{\tau} \}
+  \epred{\tau} = \{e \vbar \forall e'. \; e \evaltos e' \pand \irred(e') \implies e' \in \curly{V}\sem{\tau} \}
 \]
 \footnote{Notice that neither \vpred{\tau} nor \epred{\tau} requires well-typedness. Normally this would be a part of the predicate, but as the goal is to prove type safety we do not want it as a part of the predicate. In fact, if we did include a well-typedness requirement, then we would end up having to prove preservation for some of the proofs to go through.}The predicate $\irred$ is defined as:
 \[
   \irred(e) \eqdef \not\exists e'. \; e \evalto e'
 \]
 %TODO: Exlpain in words what irred is.
-The sets are defined on the structure of the types. \vpred{\tarrow{\tau_1}{\tau_2}} contains \epred{\tau_2}, but \epred{\tau_2} uses $\tau_2$ directly, so the definition is structurally well-founded. 
+The sets are defined on the structure of the types. \vpred{\tarrow{\tau_1}{\tau_2}} contains \epred{\tau_2}, but \epred{\tau_2} uses $\tau_2$ directly in \vpred{\tau_2}, so the definition is structurally well-founded. 
 
-To prove safety we first define a new predicate, $\safe$:
+To prove type safety we first define a new predicate, $\safe$:
 \[
   \safe(e) \eqdef \forall e' . \; e \evaltos e' \implies \val(e') \vee \exists e
 ''. \; e' \evaltos e''
@@ -47,9 +47,9 @@ We are now ready to prove type safety. Just like we did for strong normalization
 \]
 Rather than proving \circled{a} directly we prove a more general theorem and get \circled{a} as a corollary. But we are not yet in a position to state the theorem. First we need to define define the interpretation of type environments:
 \begin{align*}
-  \gpred{\bullet} & = \{ \emptyset \} \\
+  \gpred{\mtenv} & = \{ \emptyset \} \\
   \gpred{\Gamma,x:\tau} & = \{\gamma[x \mapsto v] \vbar 
-    \gamma \in \gpred{\Gamma} \wedge 
+    \gamma \in \gpred{\Gamma} \pand 
     v \in \vpred{\tau}\}
 \end{align*}
 Further we need to define semantic type safety:
@@ -60,13 +60,16 @@ We can now define our generalized version of \circled{a}.
 \begin{btypesafety}[Fundamental Property]
   If $\Gamma \vdash e : \tau$ then $\Gamma \models e : \tau$
 \end{btypesafety}
-A theorem like this would typically be the first you prove after a logical relation has been defined. The theorem says that every syntactic type safety implies semantic type safety. 
+A theorem like this would typically be the first you prove after definiting a logical relation. The theorem says that every syntactic type safety implies semantic type safety. 
 
-We will start by proving the easy part, namely \circled{b}.
-\begin{proof}[Proof. (\circled{b})]
-Suppose $e \evaltos e'$ for some $e'$, then we need to show $\val(e')$ or $\exists e''. \; e' \evalto e''$. Now either $\neg \irred(e')$ or $\irred(e')$.
+We also alter the \circled{b} part of the proof, so we prove
+\[
+  \mtenv \models e : \tau \implies \safe(e)
+\]
+\begin{proof}[Proof. (Altered \circled{b})]
+Suppose $e \evaltos e'$ for some $e'$, then we need to show $\val(e')$ or $\exists e''. \; e' \evalto e''$. We procced by casing on whether or not $\irred(e')$:
 \case{$\neg \irred(e')$} this case follows directly from the definition of $\irred$. $\irred(e')$ is defined as $\not \exists e''. \; e' \evalto e''$ and as the assumption is $\neg \irred(e')$ we get $\exists e''. \; e' \evalto e''$.
-\case{$irred(e')$} By assumption we have $\bullet \models e : \tau$. As the typing context is empty we choose the empty substitution and get $e \in \epred{\tau}$. We now use the definition of $e \in \epred{\tau}$ with what we supposed, $e \evaltos e'$, and the case assumption, $\irred(e')$, to conclude $e' \in \vpred{\tau}$. As $e'$ is in the value interpretation of $\tau$ we can conclude $\val(e')$. 
+\case{$irred(e')$} By assumption we have $\mtenv \models e : \tau$. As the typing context is empty we choose the empty substitution and get $e \in \epred{\tau}$. We now use the definition of $e \in \epred{\tau}$ with what we supposed, $e \evaltos e'$, and the case assumption, $\irred(e')$, to conclude $e' \in \vpred{\tau}$. As $e'$ is in the value interpretation of $\tau$ we can conclude $\val(e')$. 
 \end{proof}
 \begin{proof}[Proof. (Fundamental Property)] Proof by induction on the typing judgment.
   \case{\TAbs} \\
@@ -77,11 +80,11 @@ We need to show $\Gamma \models \tlabs{x}{\tau_1}{e} : \tarrow{\tau_1}{\tau_2}$.
 \]
 Now suppose that $\tlabs{x}{\tau_1}{\gamma(e)} \evaltos e'$ and $\irred(e')$. We then need to show $e' \in \vpred{\tarrow{\tau_1}{\tau_2}}$. Since $\tlabs{x}{\tau_1}{\gamma(e)}$ is a value it is irreducible, and we can conclude it took no steps. In other words $e' = \tlabs{x}{\tau_1}{\gamma(e)}$. So we need to show $\tlabs{x}{\tau_1}{\gamma(e)} \in \vpred{\tarrow{\tau_1}{\tau_2}}$. Now suppose $v \in \vpred{\tau_1}$ then we need to show $\gamma(e)[v/x] \in \epred{\tau_2}$.
 
-Now let us keep the above proof goal in mind and consider the induction hypothesis. From the induction hypothesis we have:
+Now let us keep the above proof goal in mind and consider the induction hypothesis:
 \[
   \Gamma, x: \tau_1 \models e : \tau_2
 \]
-Instantiate this with $\gamma[x \mapsto v]$. We have $\gamma[x \mapsto v] \in \gpred{\Gamma, x : \tau_1}$ because we started by supposing $\gamma \in \gpred{\Gamma}$ and we also had $v \in \vpred{\tau_2}$. The instantiation gives us $\gamma[x \mapsto v] e \in  \epred{\tau_2} \equiv \gamma(e)[v/x] \in \epred{\tau_2}$. Now recall our proof goal, we now have what we wanted to show.
+Instantiate this with $\gamma[x \mapsto v]$. We have $\gamma[x \mapsto v] \in \gpred{\Gamma, x : \tau_1}$ because we started by supposing $\gamma \in \gpred{\Gamma}$ and we also had $v \in \vpred{\tau_2}$. The instantiation gives us $\gamma[x \mapsto v] (e) \in  \epred{\tau_2} \equiv \gamma(e)[v/x] \in \epred{\tau_2}$. Now recall our proof goal, we now have what we wanted to show.
 \case{\TApp} show this case as an exercise.
 
 The remaining cases were not proved during the lecture.
@@ -96,7 +99,7 @@ Now consider what happens if we add pairs to the language.
 \end{comment}
 We need to add a clause to the value interpretation:
 \[
-  \vpred{\tau_1 \times \tau_2} = \{<v_1,v_2> \vbar v_1 \in \vpred{\tau_1} \wedge v_2 \in \vpred{\tau_2}\}
+  \vpred{\tau_1 \times \tau_2} = \{<v_1,v_2> \vbar v_1 \in \vpred{\tau_1} \pand v_2 \in \vpred{\tau_2}\}
 \]
 There is nothing surprising in this addition to the value relation, and it should not be a challenge to show the pair case of the proofs.
 %omitted: '3rd part of LR recipe is mostly about functions - Contravariance problem.'
@@ -133,7 +136,7 @@ In Java we could define a tree class with an int field and fields for the subtre
     Tree left, right;
   }
 \end{lstlisting}
-So we can define trees in our programming languages, but we cannot define them in the lambda calculus. So let us first consider what it is we want to define. we want a type that can either be a node or a leaf. A leaf can be represented by the unit (as it here does not carry any information), and a node is the product of an int and two nodes. We put the two together with the sum type, as it can be either:
+So we can define trees in our programming languages, but we cannot define them in the lambda calculus. So let us first consider what it is we want to define. we want a type that can either be a node or a leaf. A leaf can be represented by unit (as it here does not carry any information), and a node is the product of an int and two nodes. We put the two together with the sum type, as it can be either:
 \[
   tree = 1 + (int * tree * tree)
 \]
@@ -147,9 +150,9 @@ All the sides of the above equations are equal, they are all trees. We could kee
 
 Let us define a recursive function who's fixedpoint we want to find:
 \[
-F = \lambda :: type. 1 + (int \times \alpha \times \alpha)
+F = \lambda \alpha :: type. 1 + (int \times \alpha \times \alpha)
 \]
-We want the fixedpoint, that is by definition $t$ such that
+We want the fixedpoint which by definition is $t$ such that
 \[
   t = F(t)
 \]
@@ -171,9 +174,9 @@ Now let us make this look a bit more like types by substituting $F(\alpha)$ for 
 \]
 The right hand side is really just $\tau$ with $\mu \alpha. \; \tau$ substituted with $\tau$:
 \[
-  F(\mu \alpha.\; \tau) = \tau[\mu \alpha. \; \tau / \alpha]
+  \mu \alpha.\; \tau = \tau[\mu \alpha. \; \tau / \alpha]
 \]
-We are going to introduce the recursive type $\mu \alpha.\; \tau$ to our language. When we have a recursive type we can shift our view to an expanded version $\tau[\mu \alpha. \; \tau / \alpha]$ and contract back to the original type. Expanding the type is called $\fold$ and contracting is is called $\unfold$.
+We are going to introduce the recursive type $\mu \alpha.\; \tau$ to our language. When we have a recursive type we can shift our view to an expanded version $\tau[\mu \alpha. \; \tau / \alpha]$ and contract back to the original type. Expanding the type is called $\unfold$ and contracting is is called $\fold$.
 \[
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,
   thick,main node/.style={rectangle}]
@@ -190,7 +193,7 @@ With recursive types in hand we can now define our tree type:
 \[
   tree \eqdef \mu \alpha. \; 1 + (int \times \alpha \times \alpha)
 \]
-When we want to work with this we want to be able to get under the $\mu$. Say we have $e : tree$ that is an expression $e$ with type $tree$, then we want to be able to say whether it is a leaf or a node. To do this we unfold the type to get the type where $\alpha$ has been substituted with the definition of $tree$ and the outer $\mu\alpha.$ has been removed. With the outer $\mu\alpha.$ gone we can match on the sum type to find out whether it is a leaf or a node. We can fold the type back to the original tree type, when we are done working with it.
+When we want to work with this, we would like to be able to get under the $\mu$. Say we have $e : tree$ that is an expression $e$ with type $tree$, then we want to be able to say whether it is a leaf or a node. To do so we unfold the type to get the type where $\alpha$ has been substituted with the definition of $tree$ and the outer $\mu\alpha.$ has been removed. With the outer $\mu\alpha.$ gone we can match on the sum type to find out whether it is a leaf or a node. We can fold the type back to the original tree type, when we are done working with it.
 \[
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,
   thick,main node/.style={rectangle}]

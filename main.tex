@@ -24,7 +24,7 @@
 \usetikzlibrary{snakes}
 \usetikzlibrary{decorations.pathreplacing}
 \usepackage{mathtools}
-% Kodelisting. Husk at læse manualen hvis du vil lave fancy ting.
+\usepackage[makeroom]{cancel}
 % Manual: http://mirror.ctan.org/macros/latex/contrib/listings/listings.pdf
 \usepackage{listings}
 \usepackage{verbatim}
@@ -32,24 +32,18 @@
 \usepackage{bussproofs}
 \usepackage{mathpartir}
  
-% Fancy ting med enheder og datatabeller. Læs manualen til pakken
-% Manual: http://www.ctan.org/tex-archive/macros/latex/contrib/siunitx/siunitx.pdf
-%\usepackage{siunitx}
 % Indsættelse af grafik.
 \usepackage{graphicx}
 \usepackage{xcolor}
-%\usepackage{bussproofs}
 
-% Reaktionsskemaer. Læs manualen for at se eksempler.
-% Manual: http://www.ctan.org/tex-archive/macros/latex/contrib/mhchem/mhchem.pdf
-%\usepackage[version=3]{mhchem}
-
-\setlength{\mathindent{1cm}}
+%\setlength{\mathindent{0cm}}
 
 \newcommand{\sem}[1]{\ensuremath{\llbracket #1 \rrbracket}}
+\newcommand{\tuple}[1]{\ensuremath{\langle #1 \rangle}}
 \newcommand{\curly}[1]{\ensuremath{\mathcal{#1}}}
 
 \DeclareMathOperator{\FTV}{FTV}
+\DeclareMathOperator{\Rel}{Rel}
 \DeclareMathOperator{\dom}{dom}
 \DeclareMathOperator{\safe}{safe}
 \DeclareMathOperator{\irred}{irred}
@@ -63,11 +57,19 @@
 \DeclareMathOperator{\caseof}{of}
 \DeclareMathOperator{\fold}{fold}
 \DeclareMathOperator{\unfold}{unfold}
+\DeclareMathOperator{\epack}{pack}
+\DeclareMathOperator{\eunpack}{unpack}
+\DeclareMathOperator{\eas}{as}
+\DeclareMathOperator{\ein}{in}
+\DeclareMathOperator{\enot}{not}
+
+\newcommand{\pack}[3]{\ensuremath{\epack \; \tuple{#1,#2} \; \eas \; #3}}
+\newcommand{\unpack}[4]{\ensuremath{\eunpack \; \tuple{#1,#2} = #3 \; \ein \; #4 }}
 
 \newcommand{\evalto}{\ensuremath{\mapsto}}
 \newcommand{\evaltos}[1][*]{\ensuremath{\evalto^{#1}}}
 \newcommand{\warning}[1]{{\color{red} !` #1 !} \\}
-\newcommand{\mtenv}{\ensuremath{\bullet}}
+\newcommand{\mtenv}{{\raisebox{1.5pt}{$\scriptstyle\bullet$}}}
 \newcommand{\case}[1]{\\{\bf Case} #1,}
 \newcommand{\eqdef}{\ensuremath{ \; \stackrel{\mathclap{\normalfont\mbox{def}}}{=} \;}}
 \newcommand{\subst}[3]{\ensuremath{\ensuremath{#1[#2/#3]}}}
@@ -80,23 +82,42 @@
 \newcommand{\true}{\ensuremath{\text{true}}}
 \newcommand{\false}{\ensuremath{\text{false}}}
 \newcommand{\SN}[2]{\ensuremath{\SNPred_{#1}(#2)}}
+\newcommand{\pand}{\ensuremath{\; \wedge \;}}
+
+
 
 \newcommand{\pred}[2]{\ensuremath{\curly{#1}\sem{#2}}}
 \newcommand{\pres}[3]{\ensuremath{\curly{#1}_{#2}\sem{#3}}}
+\newcommand{\prep}[3]{\ensuremath{\curly{#1}\sem{#3}_{#2}}}
 
-\newcommand{\epred}[1]{\ensuremath{\pred{E}{#1}}}
-\newcommand{\epres}[2][k]{\ensuremath{\pres{E}{#1}{#2}}}
+\newcommand{\epred}[1]{\pred{E}{#1}}
+\newcommand{\epres}[2][k]{\pres{E}{#1}{#2}}
+\newcommand{\eprep}[2][\rho]{\prep{E}{#1}{#2}}
 
-\newcommand{\vpred}[1]{\ensuremath{\pred{V}{#1}}}
-\newcommand{\vpres}[2][k]{\ensuremath{\pres{V}{#1}{#2}}}
+\newcommand{\vpred}[1]{\pred{V}{#1}}
+\newcommand{\vpres}[2][k]{\pres{V}{#1}{#2}}
+\newcommand{\vprep}[2][\rho]{\prep{V}{#1}{#2}}
 
-\newcommand{\gpred}[1]{\ensuremath{\pred{G}{#1}}}
-\newcommand{\gpres}[2][k]{\ensuremath{\pres{G}{#1}{#2}}}
+\newcommand{\gpred}[1]{\pred{G}{#1}}
+\newcommand{\gpres}[2][k]{\pres{G}{#1}{#2}}
+\newcommand{\gprep}[2][\rho]{\prep{G}{#1}{#2}}
+
+\newcommand{\dpred}[1]{\pred{D}{#1}}
 
 \newcommand{\sub}[3]{\ensuremath{#1[^{#2}/_{#3}]}}
+\newcommand{\extsub}[3]{\ensuremath{#1 \lbrack #2 \mapsto #3]}}
+
+\newcommand{\equivalence}[3]{\ensuremath{#1 \approx^{#2} #3}}
+\newcommand{\ctxeq}[2]{\equivalence{#1}{ctx}{#2}}
+\newcommand{\lreq}[2]{\equivalence{#1}{LR}{#2}}
+
+
+
 
 \newcommand*{\circled}[1]{\tikz[baseline=(char.base)]{
-            \node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+            \node[shape=circle,draw,inner sep=1pt] (char) {#1};}}
+
+
 \newcommand{\TTrue}{\ensuremath{
     \inferrule*[right=T-True]{ }
                {\Gamma \vdash \true : bool}}}
@@ -104,8 +125,6 @@
 \newcommand{\TFalse}{\ensuremath{
     \inferrule*[right=T-False]{ }
                {\Gamma \vdash \false : bool}}}
-
-
 \newcommand{\TVar}{\ensuremath{
     \inferrule*[right=T-Var]{\Gamma(x) = \tau}
                             {\Gamma \vdash x : \tau}}}
@@ -171,6 +190,8 @@
 \newtheorem*{stlcmutypesafety}{Theorem}
 \newtheorem*{stlcmufundprop}{Theorem}
 \newtheorem*{monotonicity}{Lemma}
+%Lecture 4:
+\newtheorem*{fundamentalprop}{Theorem}
 
 \author{Lau\\lask@cs.au.dk}
 \title{OPLSS15, Notes for Amal Ahmed's lectures.}
@@ -180,8 +201,8 @@ The videos of the lectures of OPLSS 2015 can be found at \url{https://www.cs.uor
 \input{lec1}
 \input{lec2}
 \input{lec3}
-%\input{lec4}
-%\input{lec5}
+\input{lec4}
+\input{lec5}
 \end{document}
 
 

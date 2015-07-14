@@ -15,7 +15,7 @@
 \usepackage{hyperref}
 
 % Matematisk udtryk, fede symboler, theoremer og fancy ting (fx kædebrøker)
-\usepackage{amsmath,amssymb}
+\usepackage{amsmath,amssymb,amsfonts}
 \usepackage{stmaryrd}
 \usepackage{bm}
 \usepackage{amsthm}
@@ -68,7 +68,8 @@
 \newcommand{\evalto}{\ensuremath{\mapsto}}
 \newcommand{\evaltos}[1][*]{\ensuremath{\evalto^{#1}}}
 \newcommand{\warning}[1]{{\color{red} !` #1 !} \\}
-\newcommand{\mtenv}{\ensuremath{\bullet}}
+\newcommand{\mtenv}{{\raisebox{1.5pt}{$\scriptstyle\bullet$}}}
+
 \newcommand{\case}[1]{~\\{\bf Case} #1,~\\}
 \newcommand{\eqdef}{\ensuremath{ \; \stackrel{\mathclap{\normalfont\mbox{def}}}{=} \;}}
 \newcommand{\subst}[3]{\ensuremath{\ensuremath{#1[#2/#3]}}}
@@ -536,7 +537,7 @@ We do have (\ref{eq1}) that talks about the value interpretation for $\tau$, but
     If $\mtenv; \mtenv \vdash e : \forall \alpha. \; (\tarrow{(\tarrow{\tau}{\alpha})}{\alpha})$ and 
        $\mtenv; \mtenv \vdash k : \tarrow{\tau}{\tau_k}$ then
     \[
-      \mtenv; \mtenv \vdash \lreq{e[\tau_k] \; k}{k(e[\tau] \; \tlabs{x}{\tau}{x})} : \tau_k
+      \mtenv; \mtenv \vdash \leq{e[\tau_k] \; k}{k(e[\tau] \; \tlabs{x}{\tau}{x})} : \tau_k
 %''\mtenv; \mtenv \vdash'' not in my notes
     \]
   \end{theorem}

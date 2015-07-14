@@ -51,7 +51,7 @@ Typing rules:
   \TApp
 \]
 \subsection*{Logical Relations}
-Proof method to establish properties.
+Proof method used to establish properties. Examples:
 \begin{itemize}
 \item Termination
 \item Type safety
@@ -63,13 +63,13 @@ Proof method to establish properties.
     \[
     f: \forall \alpha. \; \tarrow{\alpha}{\alpha}
     \]
-    Cannot inspect $\alpha$ as it has no idea which type it will be, therefore this function must be $id$.
+    The program cannot inspect $\alpha$ as it has no idea which type it will be, therefore this function must be $id$.
     \[
     \forall. \; \tarrow{int}{\alpha}
     \]
     A function with this type does not exist (the function would need to return something of type $\alpha$, but it only has something of type $int$ to work with, so it cannot possibly return a value of the proper type).
   \item Security-Typed Languages (for Information Flow Control (IFC))\\
-        Example: All types in the code snippet below are labeled with their security level. A type can be labeled with either $L$ for \emph{low} or $H$ for \emph{high}. We do not want any flow from variables with a \emph{high} labeled type to a variable with a \emph{low} labeled type. The following is an example of an \emph{explicit flow} of information:
+        Example: All types in the code snippet below are labeled with their security level. A type can be labeled with either $L$ for \emph{low} or $H$ for \emph{high}. We do not want any flow from variables with a \emph{high} labeled type to a variable with a \emph{low} labeled type. The following is an example of an invalid \emph{explicit flow} of information:
         \begin{lstlisting}[escapeinside={@}{@}]
   x : int@$^L$@
   y : int@$^H$@
@@ -84,9 +84,9 @@ Further, information may leak through a \emph{side channel}. That is the value d
 How do we then argue a program is secure? Non-interference:
 \begin{align*}
   & \vdash P : \tarrow{int^L \times int^H}{int^L} \\
-  & P(v_L,v_{H1}) \approx_L P(v_L,v_{H2})
+  & P(v_L,v_{1H}) \approx_L P(v_L,v_{2H})
 \end{align*}
-If we run $P$ with the same \emph{low} value and with two different \emph{high} values, then the low result of the two runs of the program should be equal. That is the \emph{low} result does not depend on \emph{high} values.
+If we run $P$ with the same \emph{low} value and with two different \emph{high} values, then the \emph{low} result of the two runs of the program should be equal. That is the \emph{low} result does not depend on \emph{high} values.
   \end{itemize}
 \end{itemize}
 \subsection*{Categories of Logical Relations}
@@ -94,7 +94,7 @@ If we run $P$ with the same \emph{low} value and with two different \emph{high} 
   Logical Predicates     & Logical Relations    \\
 \hline
   (Unary)                & (Binary)             \\
-  $P_\tau(e)$             & $R\tau(e_1,e_2)$     \\
+  $P_\tau(e)$             & $R_\tau(e_1,e_2)$     \\
   - One property         & - Program Equivalence\\ %\footnote{Was not in my notes.}
   - Strong normalization & \\
   - Type safety          & \\
@@ -111,23 +111,23 @@ What we want to prove is:
   If $\mtenv \vdash e : \tau$ then $e \Downarrow$
 \end{strnorm}
 \begin{proof} 
-\warning{This proof gets stuck and is not complete. It is included to motivate the use of a logical relation.}
+\warning{This proof gets stuck and is not complete. It is included to motivate the use of a logical predicate.}
 Induction on the structure of the typing derivation.
 \case{$\mtenv \vdash \true : bool$} this term has already terminated.
 \case{$\mtenv \vdash \false : bool$} same as for \true.
 \case{$\mtenv \vdash \eif{e}{e_1}{e_2} : \tau$} simple, but requires the use of canonical forms of bool.
-\case{$\mtenv \vdash \tlabs{x}{\tau}{e}$ : \tarrow{\tau_1}{\tau_2}} it is a value, it has terminated.
+\case{$\mtenv \vdash \tlabs{x}{\tau_1}{e}$ : \tarrow{\tau_1}{\tau_2}} it is a value, it has terminated.
 \case{$ \TApp $} \\
 By the induction hypothesis we get $e_1 \Downarrow v_1$ and $e_2 \Downarrow v_2$. By the type of $e_1$ we conclude $e_1 \Downarrow \tlabs{x}{\tau_2}{e'}$. What we need to show is $e_1 \; e_2 \Downarrow$.
 \begin{align*}
   e_1 \; e_2 & \evaltos (\tlabs{x}{\tau_2}{e'}) \; e_2 \\
             & \evaltos (\tlabs{x}{\tau_2}{e'}) \; v_2 \\
-            & \evaltos e'[v_2/x]
+            & \evalto e'[v_2/x]
 \end{align*}
 Here we run into an issue as we do not know anything about $e'$. Our induction hypothesis is not strong enough.\footnote{:(}
 \end{proof}
 \subsubsection*{A logical predicate for strongly normalizing expressions}
-We want to define a logical predicate, \SN{\tau}{e}. We want \SN{\tau}{e} to be the set of expressions of type $\tau$ that are strongly normalizing, but let us first consider what properties we in general want a logical relation to have.
+We want to define a logical predicate, \SN{\tau}{e}. We want $\SNPred_\tau$ to accept the expressions of type $\tau$ that are strongly normalizing, but let us first consider what properties we in general want a logical predicate to have.
 
 In general for a logical predicate, $P_\tau(e)$, we want an expression, $e$, in accepted by this predicate to satisfy the following properties\footnote{Note: when we later want to prove type safety we do not want well-typedness to be a property of the predicate.}:
 \begin{enumerate}
@@ -137,11 +137,11 @@ In general for a logical predicate, $P_\tau(e)$, we want an expression, $e$, in 
 \end{enumerate}
 With the above in mind we define the strongly normalizing predicate as follows:
 \begin{align*}
-  \SN{bool}{e} & \Leftrightarrow \mtenv \vdash e : bool \; \wedge \; e \Downarrow \\
-  \SN{\tarrow{\tau_1}{\tau_2}}{e} & \Leftrightarrow \mtenv \vdash e : \tarrow{\tau_1}{\tau_2} \; \wedge \; e \Downarrow \; \wedge \; (\forall e'. \; \SN{\tau_1}{e'} \implies \SN{\tau_2}{e \; e'})\\
+  \SN{bool}{e} & \Leftrightarrow \mtenv \vdash e : bool \pand e \Downarrow \\
+  \SN{\tarrow{\tau_1}{\tau_2}}{e} & \Leftrightarrow \mtenv \vdash e : \tarrow{\tau_1}{\tau_2} \pand e \Downarrow \pand (\forall e'. \; \SN{\tau_1}{e'} \implies \SN{\tau_2}{e \; e'})\\
 \end{align*}
 It is here important to consider whether the logical predicate is well-founded. \SN{\tau}{e} is defined over the structure of $\tau$, so it is indeed well-founded.
-\subsubsection*{Strongly normalizing using a logical relation}
+\subsubsection*{Strongly normalizing using a logical predicate}
 We are now ready to show strong normalization using \SN{\tau}{e}. The proof is done in two steps:
 \[
 \circled{a} \quad \mtenv \vdash e : \tau \implies \SN{\tau}{e}
@@ -163,11 +163,11 @@ gives issues. What we instead do is to prove a generalization of \circled{a}
 \end{astrnorm}
 Here $\gamma$ is a substitution, $\gamma = \{x_1 \mapsto v_1, \dots , x_n \mapsto v_n\}$.
 
-In English the theorem reads: If $e$ is well-typed wrt some type $\tau$ and we have some substitution that satisfy the typing environment, then if we close of $e$ with $\gamma$, then this closed expression is in $\SNPred_\tau$.
+In English the theorem reads: If $e$ is well-typed wrt some type $\tau$ and we have some closing substitution that satisfy the typing environment, then if we close of $e$ with $\gamma$, then this closed expression is in $\SNPred_\tau$.
 
 $\gamma \models \Gamma$ is read ``the substitution, $\gamma$, satisfies the type environment, $\Gamma$.'' It is defined as follows:
 \[
-  \gamma \models \Gamma \eqdef \dom(\gamma) = \dom(\Gamma) \; \wedge \; 
+  \gamma \models \Gamma \eqdef \dom(\gamma) = \dom(\Gamma) \pand 
                  \forall x \in \dom(\Gamma). \; \SN{\Gamma(x)}{\gamma(x)}
 \]
 To prove the generalized theorem we need further two lemmas
@@ -224,7 +224,7 @@ By induction hypothesis we get
   &\SN{\tarrow{\tau_2}{\tau}}{\gamma(e_1)} \\
   &\SN{\tau_2}{\gamma(e_2)}
 \end{align}
-If we use the 3rd property of (1), $\forall e'. \; \SN{\tau_1}{e'} \implies \SN{\tau_2}{\gamma(e) \; e'}$, instantiated with (2), then we get $\SN{\tau_2}{\gamma(e_1) \; \gamma(e_2)}$ which is what we wanted.
+If we use the 3rd property of (1), $\forall e'. \; \SN{\tau_2}{e'} \implies \SN{\tau}{\gamma(e_1) \; e'}$, instantiated with (2), then we get $\SN{\tau}{\gamma(e_1) \; \gamma(e_2)}$ which is what we wanted.
 \case{\TAbs} \\
 We have: 
 \begin{description}
@@ -236,7 +236,7 @@ We need to show:
 \end{description}
 Our induction hypothesis in this case reads:
 \[
-  \Gamma,x:\tau_1 \vdash e : \tau_2 \; \wedge \; \gamma' \models \Gamma, x : \tau_1 \quad \implies \quad \SN{\tau_2}{\gamma'(e)}
+  \Gamma,x:\tau_1 \vdash e : \tau_2 \pand \gamma' \models \Gamma, x : \tau_1 \quad \implies \quad \SN{\tau_2}{\gamma'(e)}
 \]
 It suffices to show the following three things:
 \begin{enumerate}
@@ -244,11 +244,11 @@ It suffices to show the following three things:
 \item $\tlabs{x}{\tau_1}{\gamma(e)} \Downarrow$
 \item $\forall e'. \SN{\tau_1}{e'} \implies \SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'}$
 \end{enumerate}
-If we use the substitution lemma, and then push the $\gamma$ in under the $\lambda$-abstraction, then we get 1\footnote{Substitution has not been formally defined here, but one can find a sound definition in Pierce's Types and Programming Languages.}. 2 is okay as the lambda-abstraction is a value. 
+If we use the substitution lemma and push the $\gamma$ in under the $\lambda$-abstraction, then we get 1\footnote{Substitution has not been formally defined here, but one can find a sound definition in Pierce's Types and Programming Languages.}. 2 is okay as the lambda-abstraction is a value. 
 
-It only remains to show 3. To do this we want to somehow apply the induction hypothesis. To do that we need a $\gamma'$ such that $\gamma' \models \Gamma, x:\tau_1$. We already have $\gamma$ and $\gamma \models \Gamma$, so our $\gamma'$ should probably have have the form $\gamma' = \gamma[x \mapsto v_?]$ for some $v_?$.
+It only remains to show 3. To do this we want to somehow apply the induction hypothesis. To do that we need a $\gamma'$ such that $\gamma' \models \Gamma, x:\tau_1$. We already have $\gamma$ and $\gamma \models \Gamma$, so our $\gamma'$ should probably have have the form $\gamma' = \gamma[x \mapsto v_?]$ for some $v_?$ of type $\tau_1$.
 
-Let $e'$ be given and assume $\SN{\tau_1}{e'}$. We then need to show $\SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'}$. From $\SN{\tau_1}{e'}$ it follows that $e' \Downarrow v'$. $v'$ is a good candidate for $v_?$ so let $v_? = v'$. From the forward part of the preservation lemma we can further conclude $\SN{\tau_1}{v'}$. We use this to conclude $\gamma[x\mapsto v'] \models \Gamma, x:\tau_1$ which we use with the assumption $\Gamma,x:\tau_1 \vdash e : \tau_2$ to instantiate the induction hypothesis and get $\SN{\tau_2}{\gamma[x\mapsto v'](e)}$.
+Let $e'$ be given and assume $\SN{\tau_1}{e'}$. We then need to show $\SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'}$. From $\SN{\tau_1}{e'}$ it follows that $e' \Downarrow v'$ for some $v'$. $v'$ is a good candidate for $v_?$ so let $v_? = v'$. From the forward part of the preservation lemma we can further conclude $\SN{\tau_1}{v'}$. We use this to conclude $\gamma[x\mapsto v'] \models \Gamma, x:\tau_1$ which we use with the assumption $\Gamma,x:\tau_1 \vdash e : \tau_2$ to instantiate the induction hypothesis and get $\SN{\tau_2}{\gamma[x\mapsto v'](e)}$.
 
 Now consider the following evaluation:
 \begin{align*}
@@ -260,15 +260,21 @@ We already concluded that $e' \evaltos v'$ which corresponds to the first series
 \[
 (\tlabs{x}{\tau_1}{\gamma(e)}) \; e' \evaltos \gamma[x \mapsto v'](e)
 \]
-If we use this with $\SN{\tau_2}{\gamma[x\mapsto v'](e)}$, the fact that $(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'$ is well-typed\footnote{Follows from $\SN{\tau_1}{e'}$, the assumption $\Gamma \vdash \tlabs{x}{\tau_1}{e} : \tarrow{\tau_1}{\tau_2}$, $\gamma \models \Gamma$, the substitution lemma and the typing rule for lambda-abstractions}, and the backwards part of the $\SNPred$ preservation lemma, then we get \SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'} which is exactly what we needed to show.
+From \SN{\tau_1}{e'} we have $\mtenv \vdash e' : \tau_1$ and we already argued that $\mtenv \vdash \tlabs{x}{\tau_1}{\gamma(e)} : \tarrow{tau_1}{\tau_2}$ so from the application typing rule we get $\mtenv \vdash (\tlabs{x}{\tau_1}{\gamma(e)}) \; e' : \tau_2$. We can use this with the above evaluations and the preservation lemma to argue that every intermediate expressions in the steps down to $\gamma[x \mapsto v'](e)$ are closed and well typed.
 
+If we use \SN{\tau_2}{\gamma[x\mapsto v'](e)} with $(\tlabs{x}{\tau_1}{\gamma(e)}) \; e' \evaltos \gamma[x \mapsto v'](e)$ and the fact that every intermediate step in the evaluation is closed and well typed, then we can use the backward reduction part of the $\SNPred$ preservation lemma to get \SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'} which is the result we wanted.
 
 \end{proof}
 \subsection*{Exercises}
 \begin{enumerate}
 \item Prove $\SNPred$ preserved by forward/backward reduction
 \item Prove the substitution lemma
+\item Go through the cases of ``\circled{a} Generalized'' shown here by yourself.
 \item Prove the if-case of ``\circled{a} Generalized''
-\item Extend the language with pairs and do the proofs
+\item Extend the language with pairs and do the proofs. 
+  \begin{enumerate}
+  \item See how the clauses, we generally wanted our logical predicate to have, play out when we extend the logical predicate. Do we need to add anything for the third clause or does it work out without putting anything there like we did with the $bool$ case.
+  \end{enumerate}
+
 \end{enumerate}
 \clearpage
