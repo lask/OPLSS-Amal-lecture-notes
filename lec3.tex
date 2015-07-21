@@ -1,4 +1,3 @@
-
 \section*{Lecture 3, Step-Indexing}
 This lecture was on extending the unary logical relation for type safety of simply typed lambda calculus to recursive types, introducing universal types, and finally a short introduction to contextual equivalence.
 
@@ -48,13 +47,13 @@ Here we start at index $k$ and as we run the program we use up steps until we at
 
 We can now define the value interpretation of $\mu\alpha. \; \tau$:
 \[
-  \vpres{\mu\alpha.\; \tau} = \{\fold \; v \vbar \forall j < k. \; v \in \vpres[j]{\tau\sub{\mu\alpha.\;\tau}{\alpha}} \}
+  \vpres{\mu\alpha.\; \tau} = \{\fold \; v \vbar \forall j < k. \; v \in \vpres[j]{\sub{\tau}{\mu\alpha.\;\tau}{\alpha}} \}
 \]
 This definition is like the one we previously proposed, but with a step-index. This definition is well-founded because $j$ is required to be \emph{strictly} less than $k$ and as we define the interpretation on induction over the step-index this is indeed well founded. We do not define a value interpretation for type variables $\alpha$, as we have no polymorphism yet. The only place we have a type variable at the moment is in $\mu\alpha. \; \tau$, but in the interpretation we close of the $\tau$ under the $\mu$, so we will never encounter a free type variable.
 
 Finally, we define the expression interpretation:
 \[
-  \epres{\tau} = \{e \vbar \forall j < k. \; \forall e'. \; e \evaltos[j] e' \; \wedge \; \irred(e') \; \implies \; e' \in \vpres[k-j]{\tau}\}
+  \epres{\tau} = \{e \vbar \forall j < k. \; \forall e'. \; e \evaltos[j] e' \pand \irred(e') \; \implies \; e' \in \vpres[k-j]{\tau}\}
 \]
 To illustrate what is going on here consider the following timeline: \\
 \begin{center}
@@ -83,7 +82,7 @@ We start with an expression $e$, then we take $j$ steps and get to expression $e
 We also need to lift the interpretation of type environments to step-indexing:
 \begin{align*}
   \gpres{\mtenv} & = \{\emptyset \} \\
-  \gpres{\Gamma, x : \tau} & = \{ \gamma[x \mapsto v] \vbar \gamma \in \gpres{\Gamma} \; \wedge \; v \in \vpres{\tau} \}
+  \gpres{\Gamma, x : \tau} & = \{ \gamma[x \mapsto v] \vbar \gamma \in \gpres{\Gamma} \pand v \in \vpres{\tau} \}
 \end{align*}
 
 \[
@@ -112,57 +111,73 @@ By assumption we have $v \in \vpres{\tarrow{\tau_1}{\tau_2}}$ which gives us $\f
 \case{$\tau = \mu \alpha.\; x$}
 assume $v \in \vpres{\mu\alpha. \; \tau}$ and $j \leq k$, we then need to show $v \in \vpres[j]{\mu\alpha. \; \tau}$. From $v$'s assumed membership of the value interpretation of $\tau$ for $k$ steps we conclude that there must exist a $v'$ sucht that $v = \fold \; v'$. If we suppose $i<j$, then we need to show $v' \in \vpres[i]{\subst{\tau}{\mu\alpha.\; \tau}{\alpha}}$. From $i<j$ and $j \leq k$ we can conclude $i < k$ which we use with $\forall n < k.\; v' \in \vpres[n]{\subst{\tau}{\mu\alpha.\; \tau}{\alpha}}$, which we get from $v \in \vpres{\mu\alpha. \; \tau}$, to get $v' \in \vpres[i]{\subst{\tau}{\mu\alpha.\; \tau}{\alpha}}$.
 \end{proof}
-
 \begin{proof}[Proof (Fundemental Property)]
-  
+%TODO  
 \end{proof}
 
+The example with lists from the previous lecture used the sum type. Sums are a straight forward extenstion of the language. The extenstion of the value interpretation would be:
 \[
   \vpres{\tau_1 + \tau_2} = \{\inl \; v_1 \vbar v_1 \in \vpres{\tau_1}\} \cup 
                             \{\inr \; v_2 \vbar v_2 \in \vpres{\tau_2}\}
 \]
+We can use $k$ directly or $k$ decremented by one. It depends on whether we want casing to take up a step. Either way the definition is well-founded. 
 
 \subsection*{Universal Types}
+Now we shift focus from type safety and termination to program equivalence. To motivate the need for arguing about program equivalence we first introduce universal types.
+
+Say we want to implement a sort function. Maybe we even have a function that sorts integer lists:
 \[
-  sort \; : \; \forall \alpha.\; \tarrow{(list \; \alpha) \times (\tarrow{\alpha \time \alpha}{bool} )}{list \; \alpha}
+  sortint \; : \; \tarrow{list \; int}{list \; int}
 \]
+$sortint$ takes a list of integers and returns a sorted version of that list. Say we now want a function that sorts lists of strings, then instead of implementing a seperate function we could factor the code and have just one function. The type signature of such a generic sort function is:
 \[
-  sort[int](3,5,7)<
+  sort \; : \; \forall \alpha.\; \tarrow{(list \; \alpha) \times (\tarrow{\alpha \times \alpha}{bool} )}{list \; \alpha}
 \]
+$sort$ takes a type, a list of elements of this type, and a comparison that compares to elements of this type and returns a list sorted according to the comparison function. And example of an application of this function could be
+\[
+  sort \; [int] \; (3,5,7) \; <
+\]
+Whereas sort instantiated with the $string$ type, but given an integer list would not be a well typed instantiation.
+\[
+  sort \; [string] \; \cancelto{("a","c","b")}{(3,7,5)} \; string<
+\]
+Here the application with the list $(3,7,5)$ is not well typed, but if we instead use a list of strings, then it is well typed. 
+
+We want to extend the simply typed lambda calculus with functions that abstract over types in the same way lambda abstractions, $\tlabs{x}{\tau}{e}$, abstract over terms. We do that by introducing a type abstraction:
 \[
   \tLabs{e}
 \]
+This function abstracts over the type $\alpha$ which allows $e$ to depend on $\alpha$.
 
 \subsubsection*{System F (Simply Typed Lambda Calculus With Universal Types)}
 \begin{align*}
   \tau &::= \dots \vbar \forall \alpha. \; \tau \\
   e    &::= \dots \vbar \tLabs{e} \vbar e[\tau] \\
   v    &::= \dots \vbar \tLabs{e}\\
-  E    &::= \dots \vbar \fold \; E[\tau] 
+  E    &::= \dots \vbar E[\tau] 
 \end{align*}
 \[
-  (\tLabs{e}[\tau]) \evalto e[\tau/\alpha]
+  (\tLabs{e})[\tau] \evalto e[\tau/\alpha]
 \]
-Type environment
+Type environment\footnote{We do not annotate $\alpha$ with a kind, as we only have one kind in this language.}
 \[
   \Delta ::= \mtenv \vbar \Delta,\; \alpha
 \]
-Type judegement form:
+With the addition of type environments of type variables we our typing judgements now have the following form:
 \[
   \Delta,\Gamma \vdash e : \tau
 \]
-Well formed type:
+We now need a notion of well-formed types. If $\tau$ is well formed with respect to $\Delta$, then we write:
 \[
-  \Delta \vdash \tau \eqdef \FTV(\tau) \subseteq \Delta
+  \Delta \vdash \tau
 \]
-where $\FTV(\tau)$ is the set of free type variables in $\tau$.
+We do not include the formal rules here, but they amount to $\FTV(\tau) \subseteq \Delta$, where $\FTV(\tau)$ is the set of free type variables in $\tau$.
 
-Well-formed environment
+We further introduce a notion of well formed environments. An environment is well formed if all the types that appear in the range of $\Gamma$ are well formed.
 \[
   \Delta \vdash \Gamma \eqdef \forall x \in \dom(\Gamma). \; \Delta \vdash \Gamma(x)
 \]
-For any type judgement $\Delta,\Gamma \vdash e : \tau$ we have as an invariant that $\Delta \vdash \Gamma$.
-Typing rules:
+For any type judgement $\Delta,\Gamma \vdash e : \tau$ we have as an invariant that $tau$ is well-formed in $\Delta$ and $\Gamma$ is well formed in $\Delta$. The old typing system extended with the new form of the typing judgement looks like this:
 \[
   \FTFalse
 \hspace{1cm}
@@ -178,10 +193,63 @@ Typing rules:
 \hspace{1cm}
   \FTApp
 \]
-
+Notice that the only thing that has changed is that $\Delta$ has been added to the environment in the judgements. We further extend the typing rules with the following two rules to account for our new language constructs:
+\[
+  \FTtAbs
+\hspace{1cm}
+  \FTtApp
+\]
+\subsubsection*{Properties of System-F}
+In System-F certain types reveal the behaviour of the functions with that type. Let us consider terms with the type $\forall \alpha. \tarrow{\alpha}{\alpha}$. Recall from the motivation in lecture 1 that this had to be the identity function. We can now phrase this as a theorem:
 \begin{theorem}
   If $\mtenv ; \mtenv \vdash e : \forall \alpha. \; \tarrow{\alpha}{\alpha}$,\\ $\mtenv \vdash \tau$, and\\ $\mtenv; \mtenv \vdash v : \tau$\\ then $e[\tau]\; v \evaltos v$
 \end{theorem}
+This is a free theorem in this language. Another free theorem that was mentioned in the motivation of lecture 1 was about expressions with type $\forall \alpha. \tarrow{\alpha}{bool}$. Here all expressions with this type had to be constant functions. We can also phrase this as a theorem
+\begin{theorem}
+  If $\mtenv \vdash \tau$, $\mtenv \vdash v_1 : \tau$, and $\mtenv \vdash v_1 : \tau$, then $\ctxeq{e[\tau] \; v_1}{e[\tau]\; v_2}$.
+\end{theorem}
+Or in a slightly more general fashion where we allow different types:
+\begin{theorem}
+  If $\mtenv \vdash \tau$, $\mtenv \vdash \tau'$, $\mtenv \vdash v_1 : \tau$, and $\mtenv \vdash v_1 : \tau'$, then $\ctxeq{e[\tau]\; v_1}{e[\tau']\; v_2}$.
+\end{theorem}
+\footnote{We have not yet defined $\ctxeq{}{}$ so for now just treat it as the two programs are equivalent without thinking too much about what equivalence means.}The reason we get these free theorems is that the function has no way of inspecting the argument as it does not know what type it is. As the function has to treat its argument as an unknown 'blob' it has no choice but to return the same value every time.
+
+The question now is: ``how do we prove these free theorems?'' The two last theorems both talk about program equivalence which we prove using logical relations. The first theorem did not mention equivalence, but the proof technique of choice is still logical relations.
+
+\subsection*{Contextual Equivalence}
+To define a contectual equivalence we first define the notion of a program context. A program context is a complete program with exactly one hole in it. It is defined as follows:
+\begin{align*}
+  C ::= &\;  [\cdot] \\
+        &\vbar \eif{C}{e}{e}  \\
+        &\vbar \eif{e}{C}{e} \\
+        &\vbar \eif{e}{e}{C} \\
+        &\vbar \tlabs{x}{\tau}{C} \\
+        &\vbar C \; e \\
+        &\vbar e \; C \\
+        &\vbar \tLabs{C} \\
+        &\vbar C[\tau]
+\end{align*}
+We need a notion of context typing. For simplicity we just introduce it for simply typed lambda calculus. The context typing is written as:
+\[
+C:\; (\Gamma \vdash \tau) \implies (\Gamma' \vdash \tau') \implies \Gamma \vdash e : \tau \implies \Gamma' \vdash C[e] : \tau'
+\]
+This means that for any expression $e$ of type $\tau$ under $\Gamma$. If we embed it into $C$, then the type of the embeding is $\tau'$ under $\Gamma'$.
+
+Informally we want contextual equivalence to say that no matter what program context we embed either of the two expressions in, it gives the same result. This is also called as observational equivalence as the program context is unable to observe any difference no matter what expression we embed in it. We can of course not plug anything into the hole, so we annotate the equivalence with the type of the hole which means that the two contextual equivalent expressions have to have that type.
+\[
+  \Delta; \Gamma \vdash \ctxeq{e_1}{e_2} : \tau \eqdef \forall C.\; (\Delta ; \Gamma \vdash \tau ) \implies (\mtenv ; \mtenv \vdash \tau') \implies (C[e_1] \Downarrow v \iff C[e_2] \Downarrow v)
+\]
+This definition assumes that $e_1$ and $e_2$ has type $\tau$ under the contexts specified.
+
+Contextual equivalence is handy, because we want to be able to reason about the equivalence of two implementations. Say we have two implementations of a stack, one is implemented using an array the other using a list. If we can show that the two implementations are contextual equivalent, then we can use the more effecient one over the less effecient one and know that the complete program will behave the same.
+
+In the next lecture we will introduce a logical relation such that
+\[
+  \Delta ; \Gamma \vdash \lreq{e_1}{e_2} : \tau \implies \text{contextual equivalence \ctxeq{}{}} 
+\]
+That is we want to show that the logical relation is sound with respect to contextual equivalence. 
+
+If we can prove the above soundness, then we can state our free theorems with $\lreq{}{}$ rather than $\ctxeq{}{}$ and get the same result, if we can prove the logical equivalence. We would like to do this as it is difficult to directly prove two things are contextual equivalent. A direct proof has to talk about all possible program contexts which we could do using induction, but the lambda-abstraction case turns out to be difficult. This motivates the use of other proof methods where logical relations is one of them.
 
 \subsection*{Exercises}
 \begin{enumerate}
