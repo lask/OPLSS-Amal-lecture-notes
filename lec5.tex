@@ -1,3 +1,156 @@
 \section*{Lecture 5}
 
+\subsection*{Existential types}
+The last kind of type we will deal with is existential types. An existential type is reminiscent of a Java interface. It describes some functionality that someone can go off and implement. You can use the existential type without knowing what the actual implementation is going to be. Use this technique to implement abstract data types.
+
+Take for example a stack. We would expect a stack to have the following functions:
+\begin{description}
+  \item{mk}, a function that creates a new stack.
+  \item{push}, a function that pushes an element on the stack. It takes a stack and an element and returns the new stack.
+  \item{pop}, a function that pops the top element of the stack. It takes a stack and returns the new stack along with the element that was popped from it.
+\end{description}
+An interface would define the above signature which you then would go off and implement\footnote{There is a famous paper called \emph{Abstract Data Types Have Existential Type} from '86 by Mitchell and Plotkin. The title says it all.}. If we wanted to write an interface for a stack we would write something like (this is meant to be suggestive, so it is in an non-formal notation):
+\begin{align*}
+  stack = \exists \alpha \langle & mk: \tarrow{1}{\alpha}, \\
+                                 & push: \tarrow{\alpha \times int}{\alpha}, \\
+                                 & pop: \tarrow{\alpha}{\alpha \times int} \rangle
+\end{align*}
+where $\alpha$ stands for the type that is used in the actual implementation. The above is an interface. It hides all the $\alpha$s which means that a client cannot see the actual type of the stack which means that they do not know how it is actually implemented.
+
+We formally write existentials in the same way we wrote universal types:
+\[
+  \exists \alpha. \: \tau
+\]
+Here $\tau$ is the same as the record in the stack example. The interface is just a type, so now we need to define how one implements something of an existential type. If we were to implement the stack interface, then we would implement a package of functions that are supposed to be used together. This could look something like (again this is meant to be suggestive):
+%implement stack creating package:
+\begin{align*}
+  \epack\; &array[int], \\
+         & \langle \lambda x:\_.\; \dots\;,\\
+         & \lambda x:\_.\; \dots\;,\\
+         & \lambda x:\_.\; \dots\; \rangle
+\end{align*}
+Here $array[int]$ is the type we want to use for the concrete implementation and the record of functions is the concrete implementation that uses $array[int]$ to implement a stack. Let us introduce an example we can use in the in the rest of this note. Suppose we have the following type:
+\[
+  \tau = \exists \alpha. \; \alpha \times (\tarrow{\alpha}{bool})
+\]
+And two terms that we for now claim is of this type:
+\begin{align*}
+  e_1 & = \pack{int}{\tuple{1, \tlabs{x}{int}{x=0}}}{\tau} \\
+  e_2 & = \pack{bool}{\tuple{\true, \tlabs{x}{bool}{\enot\; x}}}{\tau}
+\end{align*}
+Here $int$ and $bool$ are called the \emph{witness types}. We claim that these two implementations are equivalent and our goal is to show this. 
+
+Before we can do that we need to introduce a bit more. $\epack$ is how we create something of existential type, it is our introduction form. We also need an elimination which is $\eunpack$. $\eunpack$ takes apart package, so we can use its components. A package consists of a witness type and a and an expression that implements an existential type. We also need typing rules for these two constructs:
+\[
+  \inferrule*{\Delta; \Gamma \vdash e : \subst{\tau}{\tau'}{\alpha} \and
+              \Delta \vdash \tau'}
+             {\Delta; \Gamma \vdash \pack{\tau'}{e}{\exists \alpha.\tau} : \exists \alpha.\tau}
+\hspace{1cm}
+  \inferrule*{\Delta; \Gamma \vdash e_1 : \exists \alpha. \tau \and
+              \Delta,\alpha;\Gamma,x:\tau \vdash e_2 : \tau_2 \and
+              \Delta \vdash \tau_2}
+             {\Delta; \Gamma \vdash \unpack{\alpha}{x}{e_1}{e_2} : \tau_2}
+\]
+The typing rule of $\epack$ says that provided an implementation of an existential type that implementation has to be well-typed when the witness type is plugged in for $\alpha$. 
+%We write '$as \exists \alpha. \tau$' to know what interface has been implemented. It tells what type we substitute into.
+In the typing rule for $\eunpack$ it is of importance that $\alpha$ is not free in $\tau_2$ which is ensured by $\Delta \vdash \tau_2$. This is important because the point of a package is to hide away the witness type. Within a certain scope the witness type can be pulled out of the package using $\eunpack$ if $\alpha$ could be returned, then it would be exposed to the outer world which would defeat the purpose of hiding it. $\eunpack$ takes out the components of $e_1$ and calls them $\alpha$ and $x$. The two components can then be used in the body, $e_2$, of the $\eunpack$-expression.
+
+With the typing rules we can type check $e_1$ and $e_2$ to verify that they in fact have type $\tau$. Typing of $e_1$:
+\[
+  \inferrule*{\inferrule*{\inferrule*{ }
+                                     {\mtenv; \mtenv \vdash 1 : int}
+                          \and
+                          \inferrule*{\inferrule*{\inferrule*{ }
+                                                             {\mtenv; x: int \vdash x : int}
+                                                  \and
+                                                  \inferrule*{ }
+                                                             {\mtenv; x: int \vdash 0 : int}}
+                                                 {\mtenv; x: int \vdash x = 0 : bool}}
+                                     {\mtenv;\mtenv \vdash \tlabs{x}{int}{x} : \tarrow{int}{bool}}}
+                         {\mtenv;\mtenv \vdash \tuple{1,\tlabs{x}{int}{x=0}} : int \times (\tarrow{int}{bool})}
+              \and
+              \inferrule*{ }
+                         {\mtenv \vdash int}}
+             {\mtenv ; \mtenv \vdash \pack{int}{\tuple{1,\tlabs{x}{int}{x=0}}}{\tau} : \tau}
+\]
+Typing of $e_2$: %Was not part of lecture
+\[
+  \inferrule*{\inferrule*{\inferrule*{ }
+                                     {\mtenv; \mtenv \vdash \true : bool}
+                          \and
+                          \inferrule*{\inferrule*{\inferrule*{ }
+                                                             {\mtenv; x: bool \vdash x : bool}}
+                                                 {\mtenv; x: bool \vdash \enot\; x : bool}}
+                                     {\mtenv;\mtenv \vdash \tlabs{x}{bool}{x} : \tarrow{bool}{bool}}}
+                         {\mtenv;\mtenv \vdash \tuple{\true, \tlabs{x}{bool}{\enot\; x}} : bool \times (\tarrow{bool}{bool})}
+              \and
+              \inferrule*{ }
+                         {\mtenv \vdash bool}}
+             {\mtenv ; \mtenv \vdash \pack{bool}{\tuple{\true, \tlabs{x}{bool}{\enot\; x}}}{\tau} : \tau}
+\]
+To use a package constructed with $\epack$ we need to unpack it with an $\eunpack$. If we for instance try to unpack $e_1$, then we do it as follows:
+\begin{align*}
+  \eunpack \tuple{\alpha,p} = e_1 & \ein \\
+  & \cancel{(\snd \; p) \; 5} \\
+  & (\snd \; p)(\fst \; p)
+\end{align*}
+Here the type, $int$ is bound to $\alpha$, and the pair $(1,\tlabs{x}{int}{x=0})$ is bound to $p$. When we take the second projection of $p$ to get the function out, we cannot apply it to 5 because that would not type check. The environment in which we type check the body of the $\eunpack$ is $\alpha,p:\alpha \times \tarrow{\alpha}{book}$. So for the expression to type check we need to apply the function to something of type $\alpha$. We cannot use 5 as it has type $int$ rather than $\alpha$. The only thing of type $\alpha$ and thus the only thing we can give to the function is the first projection of $p$. We can further not return $(\fst p)$ directly as we require $\alpha$ not to be free in the body of the unpack, remember the requirement $\Delta \vdash \tau_2$ in the typing rule.
+
+Likewise for $e_2$ we can only pass the first projection for the function in the second projection of the package. So the only way we can apply the function in  $e_2$ is:
+%due to the type $\alpha; p : \alpha \times(\tarrow{\alpha}{int})$ we cannot use 5.
+%''Related'' R = \{\tuple{1,\true}\} (e_1 - 1, e_2 - true)
+
+\begin{align*}
+  \eunpack \tuple{\alpha,p} = e_2 & \ein \\
+  & (\snd \; p)(\fst \; p)
+\end{align*}
+%If we wrote this for $\tau=\exists \alpha. \alpha \time (\tarrow{\alpha}{\alpha})$
+%Then it would not type check because the body would have type \alpha which violates the ``no free \alphas in the body''-rule (specifically the part with $\Delta \vdash \tau_2$)
+We can now informally argue why the $e_1$ and $e_2$ are equivalent. In $e_1$ the only value of type $\alpha$ is $1$ and in $e_2$ it is only $t\true$. So the related values $R$ must be $\{(1,\true)\}$. As  already stated these are the only values we can apply the functions to, so we can quickly find the possible values that can be returned. In $e_1$ it is $(\tlabs{x}{x=0})\; 1 \evalto \false$ and in $e_2$ it is $(\tlabs{x}{\enot x })\; true \evalto \false$ so the only value that is ever exposed from the package is $\false$. If this claim is true, then it is impossible for a client to observe a difference and thus which package is in fact in use. 
+
+To formally argue that $e_1$ and $e_2$ are equivalent we need to properly introduce the syntax we have been talking about so far:
+\begin{align*}
+  \tau & ::= \dots \vbar \exists \alpha. \; \tau \\
+  e & ::= \dots \vbar \pack{\tau}{e}{\exists \alpha. \tau} \vbar \unpack{\alpha}{x}{e}{e} \\
+  v & ::= \dots \vbar \pack{\tau}{e}{\exists \alpha. \tau} \\
+  E & ::= \dots \vbar \pack{\tau}{E}{\exists \alpha. \tau} \vbar \unpack{\alpha}{x}{E}{e}
+\end{align*}
+We also need extend the operational semantics:
+\[
+\unpack{\alpha}{x}{v}{e} \evalto \subst{\subst{e}{\tau}{\alpha}}{v}{x}
+\]
+Now finally we need to extend our value interpretation to consider $\exists \alpha. \; \tau$. The values we relate are of the form $(\pack{\tau_1}{v_1}{\exists\alpha.\tau}, \; \pack{\tau_2}{v_2}{\exists\alpha.\tau})$ and as always our first instinct should be to look at the elimination form, so we want to consider $\unpack{\alpha}{x}{\pack{\tau_i}{v_i}{\exists\alpha.\tau}}{e_i}$ for $i=1,2$. Now it would be tempting to relate the two bodies, but we get a similar issue to what we had for sum types. If we relate the two bodies, then what type do we relate them under? The type we get might be larger than the one we are interpreting which gives us a well-foundedness problem. So by analogy we require that the two unpack expressions have related bodies. Instead, we relate $v_1$ and $v_2$ under some relation:
+% Consider elim forms:
+% unpack <\alpha,x> = pack \tau_1,v_1 as ... in e_1
+% Size issue with e_1, the type of e_1 might be larger than what we got.
+\begin{align*}
+  \vprep{\exists\alpha.\tau} = \{(&\pack{\rho_1(\tau_1)}{v_1}{\rho_1(\exists\alpha.\tau)},\\
+                                  &\pack{\rho_2(\tau_2)}{v_2}{\rho_2(\exists\alpha.\tau)}) \vbar \exists R \in \Rel[\tau_1,\tau_2].\; (v_1,v_2) \in \vprep[\extsub{\rho}{\alpha}{(\tau_1,\tau_2,R)}]{\tau}\} %Consider whether this should be related at e_1 and e_2. A: See the syntax. We require the right compoonent in the pair to be a value.
+\end{align*}
+The relation turns out to be somewhat dual to the one for universal types. Instead of saying $\forall \tau_1,\tau_2,R$ we say $\exists \tau_1,\tau_2,R$, but as we get $\tau_1$ and $\tau_2$ directly from the values we omit them in the definition. We also relate the two values at $\tau$ and extend the the relational substitution with the types we have for $\alpha$. Notice that we use $\rho$ to close of the type variables in the two values we related.
+
+With this extension to the value interpretation we are ready to show that $e_1$ and $e_2$ are logically related. We reuse the definition of logical equivalent we defined previously. What we wish to show is:
+
+\begin{theorem}
+\[
+  \mtenv; \mtenv \vdash \lreq{e_1}{e_2} : \exists \alpha. \alpha \times (\tarrow{\alpha}{bool})
+\]
+\end{theorem}
+\begin{proof}
+  With an empty environment this amounts to show $(e_1,e_2) \in \eprep[\emptyset]{\exists \alpha. \alpha \times (\tarrow{\alpha}{bool})}$. To show this we need to establish that $e_1$ and $e_2$ evaluates down to some value and that these two values are related under the same value and relational substitution. $e_1$ and $e_2$ are $\epack$-expressions so they are already values, so we just need to show $(e_1,e_2) \in \vprep[\emptyset]{\exists \alpha. \alpha \times (\tarrow{\alpha}{bool})}$. We now need to pick a relation and show that the implementations are related under $\alpha \times (\tarrow{\alpha}{bool})$ that is 
+  \[
+  (\tuple{1, \tlabs{x}{int}{x=0}},\tuple{\true, \tlabs{x}{bool}{\enot\; x}}) \in \vprep[\extsub{\emptyset}{\alpha}{(int,bool,R)}]{\alpha \times (\tarrow{\alpha}{bool})}
+  \]
+  We pick $R=\{(1,\true)\}$ as the relation. To show that two tuples are related we show that their components are related\footnote{We defined this for logical predicates, but not for logical relations.}. So we need to show two things the first is
+  \[
+  (1,\true) \in \vprep[\extsub{\emptyset}{\emptyset}{\alpha}{(int,bool,R)}]{\alpha}
+  \]
+  Which amounts to showing $(1,\true) \in R$ which is true by the $R$ we picked. The other thing we need to show is:
+  \[
+  (\tlabs{x}{int}{x=0},\tlabs{x}{bool}{\enot\; x}) \in \vprep[\extsub{\emptyset}{\alpha}{(int,bool,R)}]{\tarrow{\alpha}{bool}}
+  \]
+  Suppose $(v_1,v_2) \in \vprep[\extsub{\emptyset}{\alpha}{(int,bool,R)}]{\alpha}$ 
+  which is the same as $(v_1,v_2) \in R$. Due to our choice of $R$ we then have $v_1 = 1$ and $v_2 = false$.
+  Now we need to show show $(v_1 = 0,\enot\; v_2) \in \eprep[\extsub{\emptyset}{\alpha}{(int,bool,R)}]{bool}$. Which means that we need to show that the two expressions evaluate to two values related under $bool$. $v_1 = 0$ evaluates to $\false$ as $v_1$ is 1 and $\enot\; v_2$ evaluates to $\false$ as well as $v_2 = \true$, so we need to show $(\false,\false) \in \vprep[\extsub{\emptyset}{\alpha}{(int,bool,R)}]{bool}$ which is true by definition of the value interpretation of $bool$.
+\end{proof}
 \clearpage
