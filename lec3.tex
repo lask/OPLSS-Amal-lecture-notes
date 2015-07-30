@@ -122,6 +122,21 @@ assume $v \in \vpres{\mu\alpha. \; \tau}$ and $j \leq k$, we then need to show $
 \end{comment}
 \begin{proof}[Proof (Fundemental Property)]
 Proof by induction over the typing derivation.
+\case{\TFold} \\~
+We need to show 
+\newcommand{\mat}{\ensuremath{\mu\alpha.\tau}}
+\[
+  \Gamma \models \fold \; e : \mat
+\]
+So suppose we have $k \geq 0$ and $\gamma \in \gpres{\mat}$, then we need to show $\gamma(\fold\; e) \in \epres{\mat}$ which amounts to showing $\fold\; \gamma(e) \in \epres{\mat}$.
+
+So suppose that $j<k$ and that $\fold\; \gamma(e) \evaltos[j] e'$ and $\irred(e')$, then we need to show $e' \in \vpres[k-j]{\mat}$. As we have assumes that $\fold\; \gamma(e)$ reduces down to something irreducible and the operationional semantics of this language are deterministic we know that $\gamma(e)$ must have evaluated down to something irreducible. We therefore know that $\gamma(e) \evaltos[j_1] e_1$ where $j_1 \leq j$ and $\irred(e_1)$.
+Now we use our induction hypothesis:
+\newcommand{\tsub}{\ensuremath{\sub{\tau}{\mat}{\alpha}}}
+\[
+  \Gamma \models e : \tsub
+\]
+We instantiate this with $k$ and $\gamma \in \gpres{\Gamma}$ to get $\gamma(e) \in \epres{\tsub}$. Which we then can instantiate with $j_1$ and $e_1$ for get $e_1 \in \vpres[k-j_1]{\tsub}$. Now let us take a step back and see what happend: We started with a $\fold\; \gamma(e)$ which took $j_1$ steps to $\fold\; e_1$. We have just shown that this $e_1$ is actually a value as it is in the value interpretation of $\vpres[k-j_1]{\tsub}$. To remind us $e_1$ is a value let us refer to it as $v_1$. We further know that $\fold\; \gamma(e)$ reduces to $e'$ in $j$ steps and that $e'$ was irreducible. $\fold\; v_1$ is also irreducible as it is a value and as our language is deterministic it must be the case that $e' = \fold\; v_1$ and thus $j = j_1$. Our proof obbligation was to show $e' = \fold \; v_1 \in \vpres[k-j]{\mat}$ to show this suppose we have $l < k-j$ (this also gives us $l < k-j_1$ as $j = j_1$). We then need to show $v_1 \in \vpres[l]{\tsub}$, we obtain this result from the monotonicity lemma using $\vpres[k-j_1]{\tsub}$ and $l < k-j_1$.
 \end{proof}
 
 The example with lists from the previous lecture used the sum type. Sums are a straight forward extension of the language. The extension of the value interpretation would be:
