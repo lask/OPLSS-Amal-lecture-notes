@@ -72,7 +72,7 @@
 \newcommand{\mtenv}{{\raisebox{1.5pt}{$\scriptstyle\bullet$}}}
 \newcommand{\case}[1]{\\{\bf Case} #1,}
 \newcommand{\eqdef}{\ensuremath{ \; \stackrel{\mathclap{\normalfont\mbox{def}}}{=} \;}}
-\newcommand{\subst}[3]{\ensuremath{\ensuremath{#1[#2/#3]}}}
+\newcommand{\subst}[3]{\ensuremath{\ensuremath{#1[^{\textstyle #2}/_{\textstyle #3}]}}}
 \newcommand{\labs}[2]{\ensuremath{\lambda #1 . \; #2}}
 \newcommand{\tlabs}[3]{\ensuremath{\lambda #1 : #2 . \; #3}}
 \newcommand{\tLabs}[2][\alpha]{\ensuremath{\Lambda #1 . \; #2}}
@@ -104,8 +104,8 @@
 
 \newcommand{\dpred}[1]{\pred{D}{#1}}
 
-\newcommand{\sub}[3]{\ensuremath{#1[^{#2}/_{#3}]}}
-\newcommand{\extsub}[3]{\ensuremath{#1 \lbrack #2 \mapsto #3]}}
+\newcommand{\sub}[3]{\subst{#1}{#2}{#3}}
+\newcommand{\extsub}[3]{\ensuremath{#1 \lbrack #2 \mapsto #3 \rbrack}}
 
 \newcommand{\equivalence}[3]{\ensuremath{#1 \approx^{#2} #3}}
 \newcommand{\ctxeq}[2]{\equivalence{#1}{ctx}{#2}}
@@ -147,31 +147,36 @@
 
 
 \newcommand{\FTTrue}{\ensuremath{
-    \inferrule*[right=T-True]{ \Delta \vdash \Gamma}
-               {\Gamma \vdash \true : bool}}}
+    \inferrule*[right=T-True]{ }
+               {\Delta ; \Gamma \vdash \true : bool}}}
 
 \newcommand{\FTFalse}{\ensuremath{
-    \inferrule*[right=T-False]{\Delta \vdash \Gamma }
-               {\Gamma \vdash \false : bool}}}
+    \inferrule*[right=T-False]{ }
+               {\Delta ; \Gamma \vdash \false : bool}}}
 
 \newcommand{\FTVar}{\ensuremath{
-    \inferrule*[right=T-Var]{\Gamma(x) = \tau \and \Delta \vdash \Gamma}
-                            {\Gamma \vdash x : \tau}}}
+    \inferrule*[right=T-Var]{\Gamma(x) = \tau}
+                            {\Delta ; \Gamma \vdash x : \tau}}}
 \newcommand{\FTApp}{\ensuremath{
-    \inferrule*[right=T-App]{\Gamma \vdash e_1 : \tarrow{\tau_2}{\tau} \and
-                            \Gamma \vdash e_2 : \tau_2 \and 
-                            \Delta \vdash \Gamma}
-                           {\Gamma \vdash e_1 \; e_2 : \tau}}}
+    \inferrule*[right=T-App]{\Delta ; \Gamma \vdash e_1 : \tarrow{\tau_2}{\tau} \and
+                            \Delta ; \Gamma \vdash e_2 : \tau_2}
+                           {\Delta ; \Gamma \vdash e_1 \; e_2 : \tau}}}
 
-\newcommand{\FTAbs}{\ensuremath{\inferrule*[right=T-Abs]{\Gamma, x: \tau_1 \vdash e : \tau_2 \and \Delta \vdash \Gamma}
-                           {\Gamma \vdash \tlabs{x}{\tau_1}{e} : \tarrow{\tau_1}{\tau_2}}}}
+\newcommand{\FTAbs}{\ensuremath{
+    \inferrule*[right=T-Abs]{\Delta ; \Gamma, x: \tau_1 \vdash e : \tau_2}
+                           {\Delta ; \Gamma \vdash \tlabs{x}{\tau_1}{e} : \tarrow{\tau_1}{\tau_2}}}}
 \newcommand{\FTIf}{\ensuremath{
-    \inferrule*[right=T-If]{\Gamma \vdash e : bool \and 
-                            \Gamma \vdash e_1 : \tau \\ 
-                            \Gamma \vdash e_2 : \tau \and 
-                            \Delta \vdash \Gamma}
-               {\Gamma \vdash \eif{e}{e_1}{e_2} : \tau}}}
-
+    \inferrule*[right=T-If]{\Delta ; \Gamma \vdash e : bool \and 
+                            \Delta ; \Gamma \vdash e_1 : \tau \\ 
+                            \Delta ; \Gamma \vdash e_2 : \tau}
+               {\Delta ; \Gamma \vdash \eif{e}{e_1}{e_2} : \tau}}}
+\newcommand{\FTtApp}{\ensuremath{
+    \inferrule*[right=T-TAbs]{\Delta,\alpha;\Gamma \vdash e : \tau}
+                             {\Delta; \Gamma \vdash \tLabs{e} : \forall \alpha.\tau}}}
+\newcommand{\FTtAbs}{\ensuremath{
+    \inferrule*[right=T-TApp]{\Delta; \Gamma \vdash e : \forall \alpha . \tau \and
+                              \Delta \vdash \tau'}
+                             {\Delta ; \Gamma \vdash e [\tau'] : \subst{\tau}{\tau'}{\alpha}}}}
 
 
 \newtheorem*{theorem}{Theorem}
@@ -193,17 +198,25 @@
 %Lecture 4:
 \newtheorem*{fundamentalprop}{Theorem}
 
-\author{Lau\\lask@cs.au.dk}
+\author{Lau Skorstengaard\\lask@cs.au.dk}
 \title{OPLSS15, Notes for Amal Ahmed's lectures.}
 \begin{document}
-\maketitle
-The videos of the lectures of OPLSS 2015 can be found at \url{https://www.cs.uoregon.edu/research/summerschool/summer15/curriculum.html}
-\input{lec1}
-\input{lec2}
+\maketitle The videos of the lectures of OPLSS 2015 can be found at \url{https://www.cs.uoregon.edu/research/summerschool/summer15/curriculum.html}. 
+%\input{lec1}
+%\input{lec2}
 \input{lec3}
-\input{lec4}
-\input{lec5}
+%\input{lec4}
+%\input{lec5}
 \end{document}
+
+
+
+
+
+
+
+
+
 
 
 

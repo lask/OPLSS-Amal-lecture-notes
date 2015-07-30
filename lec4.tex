@@ -207,7 +207,7 @@ We call theorems that follows as a consequence of parametricity for free theorem
 System-F is a terminating language, so in the free theorem it suffices to say that when it terminates it is with the value passed as argument. If we had been in a non-terminating language such as System-F with recursive types, then we would have had to state a weaker theorem namely that if the expression terminates, then it is with the value given as argument or the computation diverges.
 \begin{proof}
 \newcommand{\aaa}{\ensuremath{\forall \alpha. \; \tarrow{\alpha}{\alpha}}}
-From the fundamental property and the well-typedness of $e$ we know $\mtenv \vdash \lreq{e}{e} : \forall \alpha. \aaa$. By definition this gives us
+From the fundamental property and the well-typedness of $e$ we know $\mtenv \vdash \lreq{e}{e} : \aaa$. By definition this gives us
 \[
 \forall \rho \in \dpred{\Delta}. \; \forall \gamma \in \gprep{\Gamma}. \; (\rho_1(\gamma_1(e)),\rho_2(\gamma_2(e))) \in \eprep{\aaa}
 \]

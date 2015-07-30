@@ -1,3 +1,4 @@
+
 \section*{Lecture 3, Step-Indexing}
 This lecture was on extending the unary logical relation for type safety of simply typed lambda calculus to recursive types, introducing universal types, and finally a short introduction to contextual equivalence.
 
@@ -10,7 +11,7 @@ We can simplify this slightly; first we use the fact that $\unfold \; (\fold \; 
 \[
   \vpred{\mu\alpha. \; \tau} = \{\fold \; v \vbar v \in \vpred{\sub{\tau}{\mu\alpha.\;\tau}{\alpha}} \}
 \]
-This gives us a well-foundness issue. The value interpretation is defined by induction on the type, $\sub{\tau}{\mu\alpha.\;\tau}{\alpha}$ is not a structurally smaller type than $\mu\alpha. \; \tau$. 
+This gives us a well-foundedness issue. The value interpretation is defined by induction on the type, $\sub{\tau}{\mu\alpha.\;\tau}{\alpha}$ is not a structurally smaller type than $\mu\alpha. \; \tau$. 
 
 To solve this issue we index the interpretation by a natural number which we write as follows:
 \[
@@ -23,7 +24,7 @@ We use this as an inductive metric to make our definition well-founded, so we de
   \vpres{bool} &= \{\true,\false\} \\
   \vpres{\tarrow{\tau_1}{\tau_2}} &= \{\tlabs{x}{\tau_1}{e} \vbar \forall j \leq k. \; \forall v \in \vpres[j]{\tau_1}. \; \sub{e}{v}{x} \in \epres[j]{\tau_2} \}
 \end{align*}
-$\true$ and $\false$ are in the value interpretation of $bool$ for any $k$, so $\true$ and $\false$ will for any $k$ look like it has type $bool$. To illustrate how to understand the value interpretation of $\tarrow{\tau_1}{\tau_2}$ please consider the following timeline:  \\
+$\true$ and $\false$ are in the value interpretation of $bool$ for any $k$, so $\true$ and $\false$ will for any $k$ look like it has type $bool$. To illustrate how to understand the value interpretation of $\tarrow{\tau_1}{\tau_2}$ please consider the following time line:  \\
 \begin{center}
 \begin{tikzpicture}
     % draw horizontal line   
@@ -34,7 +35,7 @@ $\true$ and $\false$ are in the value interpretation of $bool$ for any $k$, so $
       \draw (\x cm,3pt) -- (\x cm,-3pt);
 
     % draw nodes
-    \draw (-2,0) node[below=3pt] {  } node[above=6pt] {$\lambda$-timeline};
+    \draw (-2,0) node[below=3pt] {  } node[above=6pt] {$\lambda$-time line};
     \draw (0,0) node[below=3pt] {$k$} node[above=3pt] {$ \tlabs{x}{\tau_1}{e}$};
     \draw (3,0) node[below=3pt] {$ j+1 $} node[above=3pt] {$(\tlabs{x}{\tau_1}{e})\; v $};
     \draw (4.3,0) node[below=3pt] {$   $} node[above=3pt] {$ \evalto $};    
@@ -43,7 +44,7 @@ $\true$ and $\false$ are in the value interpretation of $bool$ for any $k$, so $
     \draw (9,0) node[below=3pt] {$   $} node[above=3pt] { 'future' };
   \end{tikzpicture}
 \end{center}
-Here we start at index $k$ and as we run the program we use up steps until we at some point reach 0 and rund out of steps. At step $k$ we are looking at a lambda. A lambda is used by applying it, but it is not certain that the application will happen right away, as the we only do $\beta$-reduction when we try to apply a lambda to a value, but we might be looking at a context where we want to apply the lambda to an expressions, i.e.\ $(\tlabs{x}{\tau_1}{e})\; e_2$. We might use a bunch of steps to reduce $e_2$ down to a value, but we cannot say how many. So say that sometime in the futurewe have fully evaluated $e_2$ to $v$ and say that we have $j+1$ steps left at this time, then we can do the $\beta$ reduction which gives us $\sub{e}{v}{x}$ at step $j$. % If we ever hit 0 steps, then all bets are off. the value can have any type.
+Here we start at index $k$ and as we run the program we use up steps until we at some point reach 0 and run out of steps. At step $k$ we are looking at a lambda. A lambda is used by applying it, but it is not certain that the application will happen right away, as the we only do $\beta$-reduction when we try to apply a lambda to a value, but we might be looking at a context where we want to apply the lambda to an expressions, i.e.\ $(\tlabs{x}{\tau_1}{e})\; e_2$. We might use a bunch of steps to reduce $e_2$ down to a value, but we cannot say how many. So say that sometime in the future have fully evaluated $e_2$ to $v$ and say that we have $j+1$ steps left at this time, then we can do the $\beta$ reduction which gives us $\sub{e}{v}{x}$ at step $j$. % If we ever hit 0 steps, then all bets are off. the value can have any type.
 
 We can now define the value interpretation of $\mu\alpha. \; \tau$:
 \[
@@ -55,7 +56,7 @@ Finally, we define the expression interpretation:
 \[
   \epres{\tau} = \{e \vbar \forall j < k. \; \forall e'. \; e \evaltos[j] e' \pand \irred(e') \; \implies \; e' \in \vpres[k-j]{\tau}\}
 \]
-To illustrate what is going on here consider the following timeline: \\
+To illustrate what is going on here consider the following time line: \\
 \begin{center}
 \begin{tikzpicture}
     % draw horizontal line   
@@ -77,7 +78,7 @@ To illustrate what is going on here consider the following timeline: \\
           {\footnotesize $j$};
 \end{tikzpicture}
 \end{center}
-We start with an expression $e$, then we take $j$ steps and get to expression $e'$. At this point if $e'$ is irreducable, then we want it to belong to the value interpretation of $\tau$ for $j-k$ steps. The reason we use a strict inequality is that we do not want to hit 0 steps. If we hit 0 steps, then all bets are off.%TODO: why are all bets off?
+We start with an expression $e$, then we take $j$ steps and get to expression $e'$. At this point if $e'$ is irreducible, then we want it to belong to the value interpretation of $\tau$ for $j-k$ steps. The reason we use a strict inequality is that we do not want to hit 0 steps. If we hit 0 steps, then all bets are off.%TODO: why are all bets off?
 
 We also need to lift the interpretation of type environments to step-indexing:
 \begin{align*}
@@ -89,10 +90,10 @@ We also need to lift the interpretation of type environments to step-indexing:
   \Gamma \models e : \tau \eqdef \forall k \geq 0. \; \forall \gamma \in \gpres{\Gamma} \; \implies \gamma(e) \in \epres{\tau}
 \]
 
-\begin{stlcmufundprop}[Fundemental property]
+\begin{stlcmufundprop}[Fundamental property] ~\\
   If $\Gamma \vdash e : \tau$ then $\Gamma \models e : \tau$.
 \end{stlcmufundprop}
-
+%TODO: something is missing here, write it.
 \[
 \circled{b} \quad \mtenv \models e : \tau \implies \safe(e)
 \]
@@ -103,19 +104,27 @@ We also need to lift the interpretation of type environments to step-indexing:
 \begin{proof}
 We prove this by case on $\tau$.
 \case{$\tau = bool$}
-assume $v \in \vpres{bool}$ and $j \leq k$, we then need to show $v \in \vpres[j]{bool}$. As $v \in \vpres{bool}$ we know that either $v= \true$ or $v=\false$. If we assume $v=\true$, then we immidiately get what we want to show, as $\true$ is in $\vpres[j]{bool}$ for any $j$. Likewise for the case $v=\false$.
+assume $v \in \vpres{bool}$ and $j \leq k$, we then need to show $v \in \vpres[j]{bool}$. As $v \in \vpres{bool}$ we know that either $v= \true$ or $v=\false$. If we assume $v=\true$, then we immediately get what we want to show, as $\true$ is in $\vpres[j]{bool}$ for any $j$. Likewise for the case $v=\false$.
 \case{$\tau = \tarrow{\tau_1}{\tau_2}$}
 assume $v \in \vpres{\tarrow{\tau_1}{\tau_2}}$ and $j \leq k$, we then need to show $v \in \vpres[j]{\tarrow{\tau_1}{\tau_2}}$. As $v$ is a member of $\vpres{\tarrow{\tau_1}{\tau_2}}$ we can conclude that $v = \tlabs{x}{\tau_1}{e}$ for some $e$. By definition of $v \in \vpres[j]{\tarrow{\tau_1}{\tau_2}}$ we need to show $\forall i \leq j. \forall v' \in \vpres[i]{\tau_1}.\; v' \in \epres[i]{\tau_2}$. Suppose $i \leq j$ and $v' \in \vpres[i]{\tau_1}$, we then need to show $v' \in \epres[i]{\tau_2}$.
 
 By assumption we have $v \in \vpres{\tarrow{\tau_1}{\tau_2}}$ which gives us $\forall n \leq k. \forall v' \in \vpres[n]{\tau_1}.\; v' \in \epres[n]{\tau_2}$. From $j \leq k$ and $i \leq j$ we get $i \leq k$ by transitivity. We use this with $v' \in \vpres[i]{\tau_1}$ to get $v' \in \epres[i]{\tau_2}$ which is what we needed to show.
 \case{$\tau = \mu \alpha.\; x$}
-assume $v \in \vpres{\mu\alpha. \; \tau}$ and $j \leq k$, we then need to show $v \in \vpres[j]{\mu\alpha. \; \tau}$. From $v$'s assumed membership of the value interpretation of $\tau$ for $k$ steps we conclude that there must exist a $v'$ sucht that $v = \fold \; v'$. If we suppose $i<j$, then we need to show $v' \in \vpres[i]{\subst{\tau}{\mu\alpha.\; \tau}{\alpha}}$. From $i<j$ and $j \leq k$ we can conclude $i < k$ which we use with $\forall n < k.\; v' \in \vpres[n]{\subst{\tau}{\mu\alpha.\; \tau}{\alpha}}$, which we get from $v \in \vpres{\mu\alpha. \; \tau}$, to get $v' \in \vpres[i]{\subst{\tau}{\mu\alpha.\; \tau}{\alpha}}$.
+assume $v \in \vpres{\mu\alpha. \; \tau}$ and $j \leq k$, we then need to show $v \in \vpres[j]{\mu\alpha. \; \tau}$. From $v$'s assumed membership of the value interpretation of $\tau$ for $k$ steps we conclude that there must exist a $v'$ such that $v = \fold \; v'$. If we suppose $i<j$, then we need to show $v' \in \vpres[i]{\subst{\tau}{\mu\alpha.\; \tau}{\alpha}}$. From $i<j$ and $j \leq k$ we can conclude $i < k$ which we use with $\forall n < k.\; v' \in \vpres[n]{\subst{\tau}{\mu\alpha.\; \tau}{\alpha}}$, which we get from $v \in \vpres{\mu\alpha. \; \tau}$, to get $v' \in \vpres[i]{\subst{\tau}{\mu\alpha.\; \tau}{\alpha}}$.
 \end{proof}
+\begin{comment}
+  \begin{lemma}[Substitution]
+    Let $e$ be syntactically well-formed term, let $v$ be a closed value and let $\gamma$ be a substitution that map term variables to closed values, and let $x$ be a variable not in the domain of $\gamma$, then
+    \[
+    \extsub{\gamma}{x}{v}(e) = \subst{\gamma(e)}{x}{v}
+    \]
+  \end{lemma}
+\end{comment}
 \begin{proof}[Proof (Fundemental Property)]
-%TODO  
+Proof by induction over the typing derivation.
 \end{proof}
 
-The example with lists from the previous lecture used the sum type. Sums are a straight forward extenstion of the language. The extenstion of the value interpretation would be:
+The example with lists from the previous lecture used the sum type. Sums are a straight forward extension of the language. The extension of the value interpretation would be:
 \[
   \vpres{\tau_1 + \tau_2} = \{\inl \; v_1 \vbar v_1 \in \vpres{\tau_1}\} \cup 
                             \{\inr \; v_2 \vbar v_2 \in \vpres{\tau_2}\}
@@ -129,7 +138,7 @@ Say we want to implement a sort function. Maybe we even have a function that sor
 \[
   sortint \; : \; \tarrow{list \; int}{list \; int}
 \]
-$sortint$ takes a list of integers and returns a sorted version of that list. Say we now want a function that sorts lists of strings, then instead of implementing a seperate function we could factor the code and have just one function. The type signature of such a generic sort function is:
+$sortint$ takes a list of integers and returns a sorted version of that list. Say we now want a function that sorts lists of strings, then instead of implementing a separate function we could factor the code and have just one function. The type signature of such a generic sort function is:
 \[
   sort \; : \; \forall \alpha.\; \tarrow{(list \; \alpha) \times (\tarrow{\alpha \times \alpha}{bool} )}{list \; \alpha}
 \]
@@ -163,7 +172,7 @@ Type environment\footnote{We do not annotate $\alpha$ with a kind, as we only ha
 \[
   \Delta ::= \mtenv \vbar \Delta,\; \alpha
 \]
-With the addition of type environments of type variables we our typing judgements now have the following form:
+With the addition of type environments of type variables we our typing judgments now have the following form:
 \[
   \Delta,\Gamma \vdash e : \tau
 \]
@@ -177,7 +186,7 @@ We further introduce a notion of well formed environments. An environment is wel
 \[
   \Delta \vdash \Gamma \eqdef \forall x \in \dom(\Gamma). \; \Delta \vdash \Gamma(x)
 \]
-For any type judgement $\Delta,\Gamma \vdash e : \tau$ we have as an invariant that $tau$ is well-formed in $\Delta$ and $\Gamma$ is well formed in $\Delta$. The old typing system extended with the new form of the typing judgement looks like this:
+For any type judgment $\Delta,\Gamma \vdash e : \tau$ we have as an invariant that $tau$ is well-formed in $\Delta$ and $\Gamma$ is well formed in $\Delta$. The old typing system extended with the new form of the typing judgment looks like this:
 \[
   \FTFalse
 \hspace{1cm}
@@ -193,7 +202,7 @@ For any type judgement $\Delta,\Gamma \vdash e : \tau$ we have as an invariant t
 \hspace{1cm}
   \FTApp
 \]
-Notice that the only thing that has changed is that $\Delta$ has been added to the environment in the judgements. We further extend the typing rules with the following two rules to account for our new language constructs:
+Notice that the only thing that has changed is that $\Delta$ has been added to the environment in the judgments. We further extend the typing rules with the following two rules to account for our new language constructs:
 \[
   \FTtAbs
 \hspace{1cm}
@@ -217,7 +226,7 @@ Or in a slightly more general fashion where we allow different types:
 The question now is: ``how do we prove these free theorems?'' The two last theorems both talk about program equivalence which we prove using logical relations. The first theorem did not mention equivalence, but the proof technique of choice is still logical relations.
 
 \subsection*{Contextual Equivalence}
-To define a contectual equivalence we first define the notion of a program context. A program context is a complete program with exactly one hole in it. It is defined as follows:
+To define a contextual equivalence we first define the notion of a program context. A program context is a complete program with exactly one hole in it. It is defined as follows:
 \begin{align*}
   C ::= &\;  [\cdot] \\
         &\vbar \eif{C}{e}{e}  \\
@@ -233,7 +242,7 @@ We need a notion of context typing. For simplicity we just introduce it for simp
 \[
 C:\; (\Gamma \vdash \tau) \implies (\Gamma' \vdash \tau') \implies \Gamma \vdash e : \tau \implies \Gamma' \vdash C[e] : \tau'
 \]
-This means that for any expression $e$ of type $\tau$ under $\Gamma$. If we embed it into $C$, then the type of the embeding is $\tau'$ under $\Gamma'$.
+This means that for any expression $e$ of type $\tau$ under $\Gamma$. If we embed it into $C$, then the type of the embedding is $\tau'$ under $\Gamma'$.
 
 Informally we want contextual equivalence to say that no matter what program context we embed either of the two expressions in, it gives the same result. This is also called as observational equivalence as the program context is unable to observe any difference no matter what expression we embed in it. We can of course not plug anything into the hole, so we annotate the equivalence with the type of the hole which means that the two contextual equivalent expressions have to have that type.
 \[
@@ -241,7 +250,7 @@ Informally we want contextual equivalence to say that no matter what program con
 \]
 This definition assumes that $e_1$ and $e_2$ has type $\tau$ under the contexts specified.
 
-Contextual equivalence is handy, because we want to be able to reason about the equivalence of two implementations. Say we have two implementations of a stack, one is implemented using an array the other using a list. If we can show that the two implementations are contextual equivalent, then we can use the more effecient one over the less effecient one and know that the complete program will behave the same.
+Contextual equivalence is handy, because we want to be able to reason about the equivalence of two implementations. Say we have two implementations of a stack, one is implemented using an array the other using a list. If we can show that the two implementations are contextual equivalent, then we can use the more efficient one over the less efficient one and know that the complete program will behave the same.
 
 In the next lecture we will introduce a logical relation such that
 \[
@@ -253,7 +262,7 @@ If we can prove the above soundness, then we can state our free theorems with $\
 
 \subsection*{Exercises}
 \begin{enumerate}
-\item Do the lambda and application case of the \emph{Fundemental Property} theorem.%Specify in what proof, probably fundemental property
+\item Do the lambda and application case of the \emph{Fundamental Property} theorem.%Specify in what proof, probably fundemental property
 \item Try to prove the monotonicity lemma where the definition of the value interpretation has been adjusted with:
 \[
 \vpres{\tarrow{\tau_1}{\tau_2}} = \{\tlabs{x}{\tau_1}{e} \vbar \; \forall v \in \vpres{\tau_1}. \; \sub{e}{v}{x} \in \epres{\tau_2} \}

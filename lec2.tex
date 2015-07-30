@@ -16,7 +16,11 @@ Progress is normally proved by induction on the typing derivation.
 Preservation is normally proved by induction on the evaluation.
 Preservation is also known as \emph{subject reduction}. Progress and preservation talk about one step, so to prove type safety we have to do induction on the evaluation. Here we do not want to prove type safety the traditional way, we want to prove it using a logical predicate. We use a logical predicate rather than a logical relation, because type safety is a unary property.
 
-The notation will here be changed compared to the one from lecture 1. We define the logical predicate in two parts: a value interpretation and an expression interpretation. We define the value interpretation as:
+The notation will here be changed compared to the one from lecture 1. We define the logical predicate in two parts: a value interpretation and an expression interpretation. The value interpretation is a function from types to the power set of closed values:
+\[
+  \vpred{ } : \tarrow{type}{\curly{P}(ClosedVal)}
+\]
+The value interpretation is defined as:
 \begin{align*}
   \vpred{bool} & = \{ \true, \false \}\\
   \vpred{\tarrow{\tau_1}{\tau_2}} & = \{\tlabs{x}{\tau_1}{e} \vbar \forall v \in \curly{V}\sem{\tau_1}.\; e [v/x] \in \curly{E}\sem{\tau_2}\}
@@ -25,7 +29,7 @@ We define the expression interpretation as:
 \[
   \epred{\tau} = \{e \vbar \forall e'. \; e \evaltos e' \pand \irred(e') \implies e' \in \curly{V}\sem{\tau} \}
 \]
-\footnote{Notice that neither \vpred{\tau} nor \epred{\tau} requires well-typedness. Normally this would be a part of the predicate, but as the goal is to prove type safety we do not want it as a part of the predicate. In fact, if we did include a well-typedness requirement, then we would end up having to prove preservation for some of the proofs to go through.}The predicate $\irred$ is defined as:
+\footnote{Notice that neither \vpred{\tau} nor \epred{\tau} requires well-typedness. Normally this would be a part of the predicate, but as the goal is to prove type safety we do not want it as a part of the predicate. In fact, if we did include a well-typedness requirement, then we would end up having to prove preservation for some of the proofs to go through. We do, however, require the value interpretation to only contain closed values.}The predicate $\irred$ is defined as:
 \[
   \irred(e) \eqdef \not\exists e'. \; e \evalto e'
 \]
@@ -60,16 +64,42 @@ We can now define our generalized version of \circled{a}.
 \begin{btypesafety}[Fundamental Property]
   If $\Gamma \vdash e : \tau$ then $\Gamma \models e : \tau$
 \end{btypesafety}
-A theorem like this would typically be the first you prove after definiting a logical relation. The theorem says that every syntactic type safety implies semantic type safety. 
+A theorem like this would typically be the first you prove after defining a logical relation. The theorem says that every syntactic type safety implies semantic type safety. 
 
 We also alter the \circled{b} part of the proof, so we prove
 \[
   \mtenv \models e : \tau \implies \safe(e)
 \]
 \begin{proof}[Proof. (Altered \circled{b})]
-Suppose $e \evaltos e'$ for some $e'$, then we need to show $\val(e')$ or $\exists e''. \; e' \evalto e''$. We procced by casing on whether or not $\irred(e')$:
+Suppose $e \evaltos e'$ for some $e'$, then we need to show $\val(e')$ or $\exists e''. \; e' \evalto e''$. We proceed by casing on whether or not $\irred(e')$:
 \case{$\neg \irred(e')$} this case follows directly from the definition of $\irred$. $\irred(e')$ is defined as $\not \exists e''. \; e' \evalto e''$ and as the assumption is $\neg \irred(e')$ we get $\exists e''. \; e' \evalto e''$.
 \case{$irred(e')$} By assumption we have $\mtenv \models e : \tau$. As the typing context is empty we choose the empty substitution and get $e \in \epred{\tau}$. We now use the definition of $e \in \epred{\tau}$ with what we supposed, $e \evaltos e'$, and the case assumption, $\irred(e')$, to conclude $e' \in \vpred{\tau}$. As $e'$ is in the value interpretation of $\tau$ we can conclude $\val(e')$. 
+\end{proof}
+To prove the Fundamental Property we need a substitution lemma:
+\begin{lemma}[Substitution]
+Let $e$ be syntactically well-formed term, let $v$ be a closed value and let $\gamma$ be a substitution that map term variables to closed values, and let $x$ be a variable not in the domain of $\gamma$, then
+\[
+\extsub{\gamma}{x}{v}(e) = \subst{\gamma(e)}{x}{v}
+\]
+\end{lemma}
+\begin{proof}
+  Proof by induction on the size of $\gamma$.
+  \case{$\gamma = \emptyset$} This case is immediate by how substitution is defined. That is by definition we have $[x \mapsto v] e = \subst{e}{v}{x}$.
+  \case{$\gamma = \gamma'[y \mapsto v']$, $x\neq y$} In this case our induction hypothesis is:
+\[
+  \gamma'[x \mapsto v] e = \subst{\gamma'(e)}{v}{x}
+\]
+We wish to show 
+\[
+  \gamma'[y \mapsto v'][x \mapsto v] e = \subst{\gamma'[y \mapsto v'](e)}{v}{x}
+\]
+\begin{align}
+    \gamma'[y \mapsto v'][x \mapsto v] e & = \gamma'[x \mapsto v][y \mapsto v'] e \label{sub:step1}\\
+                                         & = \gamma'[x \mapsto v] (\subst{e}{v'}{y}) \label{sub:step2}\\
+                                         & = \subst{\gamma'(\subst{e}{v'}{y})}{x}{v}\label{sub:step3}\\
+                                         & = \subst{\gamma'[y \mapsto v'](e)}{x}{v}\label{sub:step4}
+\end{align}
+In the first step (\ref{sub:step1}) we swap the two mappings. It is safe to do so as both $v$ and $v'$ are closed, so we know that there will not happen any variable capturing. In the second step (\ref{sub:step2}) we just use the definition of substitution (as specified in the first lecture note). In third step (\ref{sub:step3}) we use the induction hypothesis\footnote{The induction hypothesis actually has a number of premises, as an exercise convince yourself that they are satisfied.}. Finally in the last step (\ref{sub:step4}) we use the definition to get the $y$ binding out as an extension of $\gamma'$.
 \end{proof}
 \begin{proof}[Proof. (Fundamental Property)] Proof by induction on the typing judgment.
   \case{\TAbs} \\
@@ -84,7 +114,7 @@ Now let us keep the above proof goal in mind and consider the induction hypothes
 \[
   \Gamma, x: \tau_1 \models e : \tau_2
 \]
-Instantiate this with $\gamma[x \mapsto v]$. We have $\gamma[x \mapsto v] \in \gpred{\Gamma, x : \tau_1}$ because we started by supposing $\gamma \in \gpred{\Gamma}$ and we also had $v \in \vpred{\tau_2}$. The instantiation gives us $\gamma[x \mapsto v] (e) \in  \epred{\tau_2} \equiv \gamma(e)[v/x] \in \epred{\tau_2}$. Now recall our proof goal, we now have what we wanted to show.
+Instantiate this with $\gamma[x \mapsto v]$. We have $\gamma[x \mapsto v] \in \gpred{\Gamma, x : \tau_1}$ because we started by supposing $\gamma \in \gpred{\Gamma}$ and we also had $v \in \vpred{\tau_2}$. The instantiation gives us $\gamma[x \mapsto v] (e) \in  \epred{\tau_2} \equiv \gamma(e)[v/x] \in \epred{\tau_2}$. The equivalence is justified by the substitution lemma we proved. Now recall our proof goal, we now have what we wanted to show.
 \case{\TApp} show this case as an exercise.
 
 The remaining cases were not proved during the lecture.
@@ -113,7 +143,7 @@ Then we need to add the following clause to the value interpretation:
   \vpred{\tau_1 + \tau_2} = \{\inl \; v \vbar v \in \vpred{\tau_1}\} \cup
                            \{\inr \; v \vbar v \in \vpred{\tau_2}\}
 \]
-It turns out this clause is sufficient. One might think that is is necessary to require the body to be in the expression relation, that is a requirements that looks something like $\forall e_1 \in \epred{\tau}$. This requirement will, however, give well-foundedness problems, as $\tau$ is not a structurally smaller type than $\tau_1 + \tau_2$. It may come as a surprise that we do not need to relate the expressions, as the slogan for logical relations is ``Related inputs to related outputs.''
+It turns out this clause is sufficient. One might think that is is necessary to require the body to be in the expression interpretation, that is a requirements that looks something like $\forall e_1 \in \epred{\tau}$. This requirement will, however, give well-foundedness problems, as $\tau$ is not a structurally smaller type than $\tau_1 + \tau_2$. It may come as a surprise that we do not need to relate the expressions, as the slogan for logical relations is ``Related inputs to related outputs.''
 
 \subsubsection*{Recursive Types}
 In this subsection we will motivate and introduce recursive types. This will set the scene for lecture 3.
@@ -129,7 +159,7 @@ We would like to have recursive types. For one they allow us to type things such
   type tree = Leaf
             | Node of int * tree * tree
 \end{lstlisting}
-In Java we could define a tree class with an int field and fields for the subtrees:
+In Java we could define a tree class with an int field and fields for the sub trees:
 \begin{lstlisting}
   class Tree {
     int value;
@@ -146,13 +176,13 @@ This is what we want, but we cannot specify this. We try to define $tree$, but $
          &= 1 + (int \times (int \times \alpha \times \alpha) \times (int \times \alpha \times \alpha)) \\
   &\vdots
 \end{align*}
-All the sides of the above equations are equal, they are all trees. We could keep going and get an infinite system of equations. If we keep substituting the definition of $\alpha$ for $\alpha$ we keep getting bigger and bigger types. All of the types are trees, and all of them are finite. If we take the limit of this process, then we end up with an infinite tree, and that tree is the tree we conceptually have in our minds. So what we need is the fixedpoint of the above equation.
+All the sides of the above equations are equal, they are all trees. We could keep going and get an infinite system of equations. If we keep substituting the definition of $\alpha$ for $\alpha$ we keep getting bigger and bigger types. All of the types are trees, and all of them are finite. If we take the limit of this process, then we end up with an infinite tree, and that tree is the tree we conceptually have in our minds. So what we need is the fixed point of the above equation.
 
-Let us define a recursive function who's fixedpoint we want to find:
+Let us define a recursive function who's fixed point we want to find:
 \[
 F = \lambda \alpha :: type. 1 + (int \times \alpha \times \alpha)
 \]
-We want the fixedpoint which by definition is $t$ such that
+We want the fixed point which by definition is $t$ such that
 \[
   t = F(t)
 \]
@@ -164,7 +194,7 @@ The fixed point of this function is written:
 \[
   \mu \alpha.\; F(\alpha)
 \]
-Here $\mu$ is a fixedpoint type constructor. As the above is the fixedpoint, then by definition it should be equal to $F$ applied to it:
+Here $\mu$ is a fixed point type constructor. As the above is the fixed point, then by definition it should be equal to $F$ applied to it:
 \[
   \mu \alpha.\; F(\alpha) = F(\mu \alpha.\; F(\alpha))
 \]

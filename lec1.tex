@@ -69,13 +69,13 @@ Proof method used to establish properties. Examples:
     \]
     A function with this type does not exist (the function would need to return something of type $\alpha$, but it only has something of type $int$ to work with, so it cannot possibly return a value of the proper type).
   \item Security-Typed Languages (for Information Flow Control (IFC))\\
-        Example: All types in the code snippet below are labeled with their security level. A type can be labeled with either $L$ for \emph{low} or $H$ for \emph{high}. We do not want any flow from variables with a \emph{high} labeled type to a variable with a \emph{low} labeled type. The following is an example of an invalid \emph{explicit flow} of information:
+        Example: All types in the code snippet below are labeled with their security level. A type can be labeled with either $L$ for \emph{low} or $H$ for \emph{high}. We do not want any flow from variables with a \emph{high} labeled type to a variable with a \emph{low} labeled type. The following is an example of an insecure \emph{explicit flow} of information:
         \begin{lstlisting}[escapeinside={@}{@}]
   x : int@$^L$@
   y : int@$^H$@
-  x = y    //This assignment is illegal.
+  x = y    //This assignment is insecure.
         \end{lstlisting}
-Further, information may leak through a \emph{side channel}. That is the value denotated by a variable with a \emph{low} labeled type depends on the value of a variable with a \emph{high} labeled type. If this is the case we may not have learned the secret value, but we may have learned some information about it. An example of a side channel:
+Further, information may leak through a \emph{side channel}. That is the value denoted by a variable with a \emph{low} labeled type depends on the value of a variable with a \emph{high} labeled type. If this is the case we may not have learned the secret value, but we may have learned some information about it. An example of a side channel:
         \begin{lstlisting}[escapeinside={@}{@}]
   x : int@$^L$@
   y : int@$^H$@
@@ -161,9 +161,13 @@ gives issues. What we instead do is to prove a generalization of \circled{a}
 \begin{astrnorm}[\circled{a} Generalized]
   If $\Gamma \vdash e : \tau$ and $\gamma \models \Gamma$ then $\SN{\tau}{\gamma(e)}$
 \end{astrnorm}
-Here $\gamma$ is a substitution, $\gamma = \{x_1 \mapsto v_1, \dots , x_n \mapsto v_n\}$.
+Here $\gamma$ is a substitution, $\gamma = \{x_1 \mapsto v_1, \dots , x_n \mapsto v_n\}$. We define the substitution to work as follows:
+\begin{align*}
+  & \emptyset (e) = e \\
+  & \extsub{\gamma}{x}{v}(e) = \gamma(\subst{e}{x}{v})
+\end{align*}
 
-In English the theorem reads: If $e$ is well-typed wrt some type $\tau$ and we have some closing substitution that satisfy the typing environment, then if we close of $e$ with $\gamma$, then this closed expression is in $\SNPred_\tau$.
+In English the theorem reads: If $e$ is well-typed with respect to some type $\tau$ and we have some closing substitution that satisfy the typing environment, then if we close of $e$ with $\gamma$, then this closed expression is in $\SNPred_\tau$.
 
 $\gamma \models \Gamma$ is read ``the substitution, $\gamma$, satisfies the type environment, $\Gamma$.'' It is defined as follows:
 \[
