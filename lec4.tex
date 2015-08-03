@@ -168,7 +168,7 @@ So we assume (1) $\Delta; \Gamma \vdash \lreq{e_1}{e_2} : \forall \alpha . \tau$
   \end{align*}
 The two first follows from the well-typedness part of (1) together with (2) and the appropriate typing rule. So we only need to show the last one.
 
-Suppose we have a $\rho$ in $dpred{\Delta}$ and a $\gamma$ in $\gprep{\Gamma}$. We then need to show $(\rho_1(\gamma_1(e_1[\tau'])),\rho_2(\gamma_2(e_2[\tau']))) \in \eprep{\subst{\tau}{\tau'}{\alpha}}$. From the $\curly{E}$-relation we find that to show this we need to show that the two terms run down to two values and those values are related. 
+Suppose we have a $\rho$ in $\dpred{\Delta}$ and a $\gamma$ in $\gprep{\Gamma}$. We then need to show $(\rho_1(\gamma_1(e_1[\tau'])),\rho_2(\gamma_2(e_2[\tau']))) \in \eprep{\subst{\tau}{\tau'}{\alpha}}$. From the $\curly{E}$-relation we find that to show this we need to show that the two terms run down to two values and those values are related. 
 
 We keep our goal in mind and turn our attention to our premise, $\Delta; \Gamma \vdash \lreq{e_1}{e_2} : \forall \alpha . \tau$. This gives us by definition:
 \[
