@@ -1,59 +1,43 @@
-\section*{Lecture 1, Logical Relations}
+\section*{Lecture 1, Logical Predicates and Relations}
 \subsection*{Simply Typed Lambda Calculus (STLC)}
-Types:
-\[
-    \tau ::=  bool \vbar \tarrow{\tau}{\tau}
-\]
-Terms:
-\[
-    e    ::= x \vbar \true 
-                 \vbar \false 
-                 \vbar \eif{e}{e}{e} 
-                 \vbar \tlabs{x}{\tau }{e}
-                 \vbar e \; e
-\]
-Values:
-\[
-    v    ::= \true \vbar \false \vbar \tlabs{x}{\tau}{e}
-\]
-Evaluation contexts:
-\[
-    E    ::= [] \vbar \eif{E}{e}{e} \vbar E \; e \vbar v \; E
-\]
-Evaluations:
-\begin{align*}
-  & \eif{\true}{e_1}{e_2} \evalto e_1 \\
-  & \eif{\false}{e_1}{e_2} \evalto e_2 \\
-  & (\tlabs{x}{\tau}{e}) \; v \evalto \subst{e}{v}{x} \\
-  & \inferrule*[]{e \evalto e'}
-               {E[e] \evalto E[e']}
-\end{align*}
-Typing Contexts:
-\[
-  \Gamma ::= \mtenv \vbar \Gamma , x : \tau
-\]
-\clearpage
-Typing rules:
-\[
-  \TFalse
-\hspace{2cm}
-  \TTrue
-\]
-\[
-  \TVar
-\hspace{2cm}
-  \TIf
-\]  
-\[
-  \TAbs
-\]
-\[
-  \TApp
-\]
+The language used to present logical predicates and relations is the simply typed lambda calculus. In the first couple lectures it will be used as it is presented here. In the later sections simply typed lambda calculus will be used as a base language so if it later on says that we extend with some construct, then it is the simply typed lambda calculus that we are extending. The simply typed lambda calculus is defined as follows:\\
+\begin{tabular}{ r | l }
+  Types: & $\tau ::=  bool \vbar \tarrow{\tau}{\tau}$ \\
+  \hline
+  Terms: & $e    ::= x \vbar \true 
+                       \vbar \false       
+                       \vbar \eif{e}{e}{e} 
+                       \vbar \tlabs{x}{\tau }{e}
+                       \vbar e \; e$ \\
+  \hline
+  Values: & $v    ::= \true \vbar \false \vbar \tlabs{x}{\tau}{e}$ \\
+  \hline
+  Evaluation  & \multirow{2}{*}{$E    ::= [] \vbar \eif{E}{e}{e} \vbar E \; e \vbar v \; E$}\\
+  contexts: & \\
+  \hline
+  \multirow{4}{*}{Evaluations:}    
+                                   & $\eif{\true}{e_1}{e_2} \evalto e_1$ \\
+                                   & $\eif{\false}{e_1}{e_2} \evalto e_2$ \\
+                                   & $(\tlabs{x}{\tau}{e}) \; v \evalto \subst{e}{v}{x}$ \\
+                                   & $\inferrule*[]{e \evalto e'}
+                                                   {E[e] \evalto E[e']}$ \\
+  \hline
+  Typing & \multirow{2}{*}{$ \Gamma ::= \mtenv \vbar \Gamma , x : \tau$} \\
+  Contexts: & \\
+  \hline
+  \multirow{8}{*}{Typing rules:} & \\
+                                 & $\TFalse \hspace{1.2cm} \TTrue$ \\
+                                 & \\
+                                 & $\TVar \hspace{1.2cm} \TIf$ \\
+                                 & \\
+                                 & $\TAbs \hspace{1.2cm} \TApp$\\
+                                 & \\
+\end{tabular}\\
+For the typing contexts it is assumed that the binders are distinct. So if $x \in \dom(\Gamma)$, then $\Gamma , x : \tau$ is not a legal context.
 \subsection*{Logical Relations}
-Proof method used to establish properties. Examples:
+Logical relations are used to prove properties about programs in a language. Logical relations are proof methods and can be used as an alternative to proving properties directly. Examples of properties one can show using logical relations are:
 \begin{itemize}
-\item Termination
+\item Termination (Strong normalization)
 \item Type safety
 \item Equivalence of programs
   \begin{itemize}
@@ -63,11 +47,11 @@ Proof method used to establish properties. Examples:
     \[
     f: \forall \alpha. \; \tarrow{\alpha}{\alpha}
     \]
-    The program cannot inspect $\alpha$ as it has no idea which type it will be, therefore this function must be $id$.
+    The program cannot inspect $\alpha$ as it has no idea which type it will be, therefore $f$ must be identity function.
     \[
     \forall. \; \tarrow{int}{\alpha}
     \]
-    A function with this type does not exist (the function would need to return something of type $\alpha$, but it only has something of type $int$ to work with, so it cannot possibly return a value of the proper type).
+    A function with this type does not exist (the function would need to return something of type $\alpha$, but it only has something of type $int$ to work with so it cannot possibly return a value of the proper type).
   \item Security-Typed Languages (for Information Flow Control (IFC))\\
         Example: All types in the code snippet below are labeled with their security level. A type can be labeled with either $L$ for \emph{low} or $H$ for \emph{high}. We do not want any flow from variables with a \emph{high} labeled type to a variable with a \emph{low} labeled type. The following is an example of an insecure \emph{explicit flow} of information:
         \begin{lstlisting}[escapeinside={@}{@}]
@@ -81,7 +65,7 @@ Further, information may leak through a \emph{side channel}. That is the value d
   y : int@$^H$@
   if y > 0 then x = 0 else x = 1
         \end{lstlisting}
-How do we then argue a program is secure? Non-interference:
+The above examples show undesired programs or parts of programs, but if we want to generally state behavior we do not want a program to show, then we state it as non-interference:
 \begin{align*}
   & \vdash P : \tarrow{int^L \times int^H}{int^L} \\
   & P(v_L,v_{1H}) \approx_L P(v_L,v_{2H})
@@ -90,6 +74,7 @@ If we run $P$ with the same \emph{low} value and with two different \emph{high} 
   \end{itemize}
 \end{itemize}
 \subsection*{Categories of Logical Relations}
+We can split logical relations into two logical relations and logical predicates. Logical predicates are unary and used usually used to show properties of a program. Logical relations are binary and are usually used to show equivalences:
 \begin{tabular}{l | l}
   Logical Predicates     & Logical Relations    \\
 \hline
@@ -100,14 +85,16 @@ If we run $P$ with the same \emph{low} value and with two different \emph{high} 
   - Type safety          & \\
 \end{tabular}
 \subsection*{Strong Normalization of STLC}
+In this section we wish to show that the simply typed lambda calculus has strong normalization which means that every term is strongly normalizing. Normalization of a term the process of reducing a term into its normal form. If a term is strongly normalizing, then it reduces to its normal form. In our case we define the normal forms of the language to be the values of the language.
 \subsubsection*{A first try on normalization of STLC}
 We start with a couple of abbreviations:
 \begin{align*}
   e \Downarrow v & \eqdef e \evaltos v \\
   e \Downarrow   & \eqdef \exists v. \; e \Downarrow v
 \end{align*}
+Where $v$ is a value.
 What we want to prove is:
-\begin{strnorm}[Strong Normalization]
+\begin{strnorm}[Strong Normalization]~\\
   If $\mtenv \vdash e : \tau$ then $e \Downarrow$
 \end{strnorm}
 \begin{proof} 
@@ -116,9 +103,9 @@ Induction on the structure of the typing derivation.
 \case{$\mtenv \vdash \true : bool$} this term has already terminated.
 \case{$\mtenv \vdash \false : bool$} same as for \true.
 \case{$\mtenv \vdash \eif{e}{e_1}{e_2} : \tau$} simple, but requires the use of canonical forms of bool.
-\case{$\mtenv \vdash \tlabs{x}{\tau_1}{e}$ : \tarrow{\tau_1}{\tau_2}} it is a value, it has terminated.
+\case{$\mtenv \vdash \tlabs{x}{\tau_1}{e}$ : \tarrow{\tau_1}{\tau_2}} it is a value already and it has terminated.
 \case{$ \TApp $} \\
-By the induction hypothesis we get $e_1 \Downarrow v_1$ and $e_2 \Downarrow v_2$. By the type of $e_1$ we conclude $e_1 \Downarrow \tlabs{x}{\tau_2}{e'}$. What we need to show is $e_1 \; e_2 \Downarrow$.
+By the induction hypothesis we get $e_1 \Downarrow v_1$ and $e_2 \Downarrow v_2$. By the type of $e_1$ we conclude $e_1 \Downarrow \tlabs{x}{\tau_2}{e'}$. What we need to show is $e_1 \; e_2 \Downarrow$. We know $e_1 \; e_2$ takes the following steps:
 \begin{align*}
   e_1 \; e_2 & \evaltos (\tlabs{x}{\tau_2}{e'}) \; e_2 \\
             & \evaltos (\tlabs{x}{\tau_2}{e'}) \; v_2 \\
@@ -129,7 +116,7 @@ Here we run into an issue as we do not know anything about $e'$. Our induction h
 \subsubsection*{A logical predicate for strongly normalizing expressions}
 We want to define a logical predicate, \SN{\tau}{e}. We want $\SNPred_\tau$ to accept the expressions of type $\tau$ that are strongly normalizing, but let us first consider what properties we in general want a logical predicate to have.
 
-In general for a logical predicate, $P_\tau(e)$, we want an expression, $e$, in accepted by this predicate to satisfy the following properties\footnote{Note: when we later want to prove type safety we do not want well-typedness to be a property of the predicate.}:
+In general for a logical predicate, $P_\tau(e)$, we want an expression, $e$, accepted by this predicate to satisfy the following properties\footnote{Note: when we later want to prove type safety we do not want well-typedness to be a property of the predicate.}:
 \begin{enumerate}
 \item $\mtenv \vdash e : \tau$
 \item The property we wish $e$ to have. In this case it would be: $e$ is strongly normalizing.
@@ -157,7 +144,7 @@ We could try to prove \circled{a} by induction over $\mtenv \vdash e : \tau$, bu
 \[
   \TAbs
 \]
-gives issues. What we instead do is to prove a generalization of \circled{a}
+gives issues. Instead we prove a generalization of \circled{a}
 \begin{astrnorm}[\circled{a} Generalized]
   If $\Gamma \vdash e : \tau$ and $\gamma \models \Gamma$ then $\SN{\tau}{\gamma(e)}$
 \end{astrnorm}
@@ -175,7 +162,7 @@ $\gamma \models \Gamma$ is read ``the substitution, $\gamma$, satisfies the type
                  \forall x \in \dom(\Gamma). \; \SN{\Gamma(x)}{\gamma(x)}
 \]
 To prove the generalized theorem we need further two lemmas
-\begin{substlem}[Substitution Lemma]
+\begin{substlem}[Substitution lemma]
   If $\Gamma \vdash e : \tau$ and $\gamma \models \Gamma$ then $\mtenv \vdash \gamma (e) : \tau$
 \end{substlem}
 \begin{forback}[$\SNPred$ preserved by forward/backward reduction]
@@ -186,10 +173,10 @@ To prove the generalized theorem we need further two lemmas
   \end{enumerate}
 \end{forback}
 \begin{proof}
-  Left as an exercise.
-\end{proof}
-\begin{proof}[Proof. (Substitution Lemma)] 
   Probably also left as an exercise (not proved during the lecture).
+\end{proof}
+\begin{proof}[Proof. (Substitution lemma)] 
+  Left as an exercise.
 \end{proof}
 \begin{proof}[Proof. (\circled{a} Generalized)] Proof by induction on $\Gamma \vdash e : \tau$.
 \case{$\Gamma \vdash \true : bool$} \\
@@ -223,12 +210,12 @@ We need to show:
 \begin{description}
   \item $\SN{\tau}{\gamma(e_1 \; e_2)} \equiv \SN{\tau}{\gamma(e_1) \; \gamma(e_2)}$
 \end{description}
-By induction hypothesis we get
+By the induction hypothesis we have
 \begin{align}
   &\SN{\tarrow{\tau_2}{\tau}}{\gamma(e_1)} \\
   &\SN{\tau_2}{\gamma(e_2)}
 \end{align}
-If we use the 3rd property of (1), $\forall e'. \; \SN{\tau_2}{e'} \implies \SN{\tau}{\gamma(e_1) \; e'}$, instantiated with (2), then we get $\SN{\tau}{\gamma(e_1) \; \gamma(e_2)}$ which is what we wanted.
+If we use the 3rd property of (1), $\forall e'. \; \SN{\tau_2}{e'} \implies \SN{\tau}{\gamma(e_1) \; e'}$, instantiated with (2), then we get $\SN{\tau}{\gamma(e_1) \; \gamma(e_2)}$ which is the result we need.
 \case{\TAbs} \\
 We have: 
 \begin{description}
@@ -250,7 +237,7 @@ It suffices to show the following three things:
 \end{enumerate}
 If we use the substitution lemma and push the $\gamma$ in under the $\lambda$-abstraction, then we get 1\footnote{Substitution has not been formally defined here, but one can find a sound definition in Pierce's Types and Programming Languages.}. 2 is okay as the lambda-abstraction is a value. 
 
-It only remains to show 3. To do this we want to somehow apply the induction hypothesis. To do that we need a $\gamma'$ such that $\gamma' \models \Gamma, x:\tau_1$. We already have $\gamma$ and $\gamma \models \Gamma$, so our $\gamma'$ should probably have have the form $\gamma' = \gamma[x \mapsto v_?]$ for some $v_?$ of type $\tau_1$.
+It only remains to show 3. To do this we want to somehow apply the induction hypothesis for which we need a $\gamma'$ such that $\gamma' \models \Gamma, x:\tau_1$. We already have $\gamma$ and $\gamma \models \Gamma$, so our $\gamma'$ should probably have have the form $\gamma' = \gamma[x \mapsto v_?]$ for some $v_?$ of type $\tau_1$. Let us move on and see if any good candidates for $v_?$ present themselves.
 
 Let $e'$ be given and assume $\SN{\tau_1}{e'}$. We then need to show $\SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'}$. From $\SN{\tau_1}{e'}$ it follows that $e' \Downarrow v'$ for some $v'$. $v'$ is a good candidate for $v_?$ so let $v_? = v'$. From the forward part of the preservation lemma we can further conclude $\SN{\tau_1}{v'}$. We use this to conclude $\gamma[x\mapsto v'] \models \Gamma, x:\tau_1$ which we use with the assumption $\Gamma,x:\tau_1 \vdash e : \tau_2$ to instantiate the induction hypothesis and get $\SN{\tau_2}{\gamma[x\mapsto v'](e)}$.
 
@@ -264,21 +251,20 @@ We already concluded that $e' \evaltos v'$ which corresponds to the first series
 \[
 (\tlabs{x}{\tau_1}{\gamma(e)}) \; e' \evaltos \gamma[x \mapsto v'](e)
 \]
-From \SN{\tau_1}{e'} we have $\mtenv \vdash e' : \tau_1$ and we already argued that $\mtenv \vdash \tlabs{x}{\tau_1}{\gamma(e)} : \tarrow{tau_1}{\tau_2}$ so from the application typing rule we get $\mtenv \vdash (\tlabs{x}{\tau_1}{\gamma(e)}) \; e' : \tau_2$. We can use this with the above evaluations and the preservation lemma to argue that every intermediate expressions in the steps down to $\gamma[x \mapsto v'](e)$ are closed and well typed.
+From \SN{\tau_1}{e'} we have $\mtenv \vdash e' : \tau_1$ and we already argued that $\mtenv \vdash \tlabs{x}{\tau_1}{\gamma(e)} : \tarrow{\tau_1}{\tau_2}$ so from the application typing rule we get $\mtenv \vdash (\tlabs{x}{\tau_1}{\gamma(e)}) \; e' : \tau_2$. We can use this with the above evaluation and the forward part of the preservation lemma to argue that every intermediate expressions in the steps down to $\gamma[x \mapsto v'](e)$ are closed and well typed.
 
 If we use \SN{\tau_2}{\gamma[x\mapsto v'](e)} with $(\tlabs{x}{\tau_1}{\gamma(e)}) \; e' \evaltos \gamma[x \mapsto v'](e)$ and the fact that every intermediate step in the evaluation is closed and well typed, then we can use the backward reduction part of the $\SNPred$ preservation lemma to get \SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'} which is the result we wanted.
 
 \end{proof}
 \subsection*{Exercises}
 \begin{enumerate}
-\item Prove $\SNPred$ preserved by forward/backward reduction
-\item Prove the substitution lemma
+\item Prove $\SNPred$ preserved by forward/backward reduction.
+\item Prove the substitution lemma.
 \item Go through the cases of ``\circled{a} Generalized'' shown here by yourself.
-\item Prove the if-case of ``\circled{a} Generalized''
+\item Prove the if-case of ``\circled{a} Generalized''.
 \item Extend the language with pairs and do the proofs. 
   \begin{enumerate}
   \item See how the clauses, we generally wanted our logical predicate to have, play out when we extend the logical predicate. Do we need to add anything for the third clause or does it work out without putting anything there like we did with the $bool$ case.
   \end{enumerate}
-
 \end{enumerate}
 \clearpage
