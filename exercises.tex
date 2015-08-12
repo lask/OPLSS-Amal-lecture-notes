@@ -84,6 +84,10 @@
 \newcommand{\SN}[2]{\ensuremath{\SNPred_{#1}(#2)}}
 \newcommand{\pand}{\ensuremath{\; \wedge \;}}
 
+\newcommand{\equivalence}[3]{\ensuremath{#1 \approx^{#2} #3}}
+\newcommand{\ctxeq}[2]{\equivalence{#1}{ctx}{#2}}
+\newcommand{\lreq}[2]{\equivalence{#1}{LR}{#2}}
+
 \newcommand{\pred}[2]{\ensuremath{\curly{#1}\sem{#2}}}
 \newcommand{\pres}[3]{\ensuremath{\curly{#1}_{#2}\sem{#3}}}
 
@@ -488,8 +492,48 @@ We further had $\SN{\tau_1}{\gamma(e_1)}$ from our induction hypothesis which we
 \end{proof}
 
 \section*{Lecture 2 exercies}
-\subsection*{Prove the TApp case of the Fundemental Property theorem}
-%TODO
+\subsection*{Prove the TApp case of the Fundamental Property theorem}
+
+\begin{comment}
+  %I did not need this theorem anyway, but it is left here anyway.
+  \begin{lemma}[Preservation of $\curly{E}$ over backward reduction]
+    If $e \evalto e'$ and $e' \in \epred{\tau}$ then $e \in \epred{\tau}$.
+  \end{lemma}
+  \begin{proof}
+    Suppose we have $e\evaltos e''$ and $\irred{e''}$ for some $e''$. We then need to show
+    \[
+    e'' \in vpred{\tau}
+    \]
+    As our language is deterministic and we know that $e$ steps to $e'$ then $e'$ must step to $e''$ in a number of steps. We can then instantiate $e' \in \epred{\tau}$ with $e' \evaltos e''$ and $\irred{e''}$ to get $e'' \in \vpred{\tau} $ which is the result we desired.
+  \end{proof}
+\end{comment}
+\begin{theorem}[Fundamental Property]
+  If $\Gamma \vdash e : \tau$ then $\Gamma \models e : \tau$
+\end{theorem}
+\begin{proof}
+  proof by induction over the typing derivation. Here we will only show the case asked for in the exercises.
+  \case{\TApp} In this case we assume $\Gamma \vdash e_1 \; e_2 : \tau$ and we want to show $\Gamma \models e_1 \; e_2 : \tau$. Suppose we have a $\gamma \in \gpred{\Gamma}$, then we need to show $\gamma(e_1 \; e_2) \in \epred{\Gamma}$ which is equivalent to $\gamma(e_1) \; \gamma(e_2) \in \epred(\Gamma)$. Looking at the definition of $\curly{E}$ we may now suppose  $\gamma(e_1) \; \gamma(e_2) \evaltos e'$ and $\irred(e')$ for some $e'$. We then need to show $e' \in \vpred{\tau}$.
+
+We now turn our attention to the induction hypotheses:
+\begin{align*}
+  \Gamma & \models e_1 : \tarrow{\tau_2}{\tau} \\
+  \Gamma & \models e_2 : \tau_2
+\end{align*}
+From the first induction hypothesis instantiated with $\gamma \in \gpred{\gamma}$ we get $\gamma(e_1) \in \epred{\tarrow{\tau_2}{\tau}}$. Using the operational semantics we know that $\gamma(e_1)$ evaluates to some expression $e_1'$ where $\irred(e_1')$. With this we instantiate $\gamma(e_1) \in \epred{\tarrow{\tau_2}{\tau}}$ to get $e_1' \in \vpred{\tarrow{\tau_2}{\tau}}$ which further means that $e_1'$ must be of the form $\tlabs{x}{\tau}{e''}$ for some $e''$.
+
+From the second induction hypothesis instantiated with $\gamma \in \gpred{\Gamma}$ we get $gamma(e_2) \in \epred{\tau_2}$. Again from the operational semantics we have $\gamma(e_2)$ evaluates to some $e_2'$ in a number of steps and $\irred{e_2'}$. With this we instantiate $gamma(e_2) \in \epred{\tau_2}$ to get $e_2' \in \vpred{\tau_2}$.
+
+We can now instantiate $e_1' \in \vpred{\tarrow{\tau_2}{\tau}}$ with $e_2' \in \vpred{\tau_2}$. to get $\sub{e''}{e_2'}{x} \in \epred{\tau}$. Now let us take a step back and consider what we have. We have argued the parts necessary for the following steps to take place:
+\begin{align}
+  \gamma(e_1) \; \gamma(e_2) & \evaltos e_1' \; \gamma(e_2) \nonumber\\
+                            & \equiv (\tlabs{x}{\tau}{e''}) \; \gamma(e_2) \nonumber\\
+                            & \evaltos (\tlabs{x}{\tau}{e''}) \; e_2' \nonumber\\
+                            & \evalto \sub{e''}{e_2'}{x} \label{laststep}
+\end{align}
+We can do the $\beta$-reduction in the last step (\ref{laststep}) because $e_2'$ is in the value interpretation of $\tau_2$ which means that it is a value.
+
+Previously in the proof, we assumed $\gamma(e_1) \; \gamma(e_2) \evaltos e'$ which we can use with the fact that our language is deterministic to argue that $\sub{e''}{e_2'}{x} \evaltos e'$. This allows us to instantiate $\sub{e''}{e_2'}{x} \in \epred{\tau}$ and get the result we needed to show, namely $e' \in vpred{\tau}$.
+\end{proof}
 
 
 \section*{Lecture 3 exercises}
@@ -537,7 +581,7 @@ We do have (\ref{eq1}) that talks about the value interpretation for $\tau$, but
     If $\mtenv; \mtenv \vdash e : \forall \alpha. \; (\tarrow{(\tarrow{\tau}{\alpha})}{\alpha})$ and 
        $\mtenv; \mtenv \vdash k : \tarrow{\tau}{\tau_k}$ then
     \[
-      \mtenv; \mtenv \vdash \leq{e[\tau_k] \; k}{k(e[\tau] \; \tlabs{x}{\tau}{x})} : \tau_k
+      \mtenv; \mtenv \vdash \lreq{e[\tau_k] \; k}{k(e[\tau] \; \tlabs{x}{\tau}{x})} : \tau_k
 %''\mtenv; \mtenv \vdash'' not in my notes
     \]
   \end{theorem}
