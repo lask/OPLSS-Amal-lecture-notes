@@ -38,7 +38,7 @@ And two terms that we for now claim is of this type:
   e_1 & = \pack{int}{\tuple{1, \tlabs{x}{int}{x=0}}}{\tau} \\
   e_2 & = \pack{bool}{\tuple{\true, \tlabs{x}{bool}{\enot\; x}}}{\tau}
 \end{align*}
-Here $int$ and $bool$ are called the \emph{witness types}. We claim that these two implementations are equivalent and our goal in this note is to show this. 
+Here $int$ and $bool$ are called the \emph{witness types}. We claim that these two implementations are equivalent and our goal in this note is to show this.
 
 Before we can do that we need to introduce a bit more. $\epack$ is how we create something of existential type, it is our introduction form. We also need an elimination form which is $\eunpack$. $\eunpack$ takes apart package, so we can use its components. A package consists of a witness type and an expression that implements an existential type. We also need typing rules for these two constructs:
 \[
@@ -51,7 +51,7 @@ Before we can do that we need to introduce a bit more. $\epack$ is how we create
               \Delta \vdash \tau_2}
              {\Delta; \Gamma \vdash \unpack{\alpha}{x}{e_1}{e_2} : \tau_2}
 \]
-Intuitively, the typing rule of $\epack$ says that provided an implementation of the existential type that implementation has to be well-typed when the witness type is plugged in for $\alpha$. 
+Intuitively, the typing rule of $\epack$ says that provided an implementation of the existential type that implementation has to be well-typed when the witness type is plugged in for $\alpha$.
 %We write '$as \exists \alpha. \tau$' to know what interface has been implemented. It tells what type we substitute into.
 In the typing rule for $\eunpack$ it is of importance that $\alpha$ is not free in $\tau_2$ which is ensured by $\Delta \vdash \tau_2$. This is important because the point of a package is to hide away the witness type. Within a certain scope the witness type can be pulled out of the package using $\eunpack$ if $\alpha$ could be returned, then it would be exposed to the outer world which would defeat the purpose of hiding it. $\eunpack$ takes out the components of $e_1$ and calls them $\alpha$ and $x$. The two components can then be used in the body, $e_2$, of the $\eunpack$-expression.
 
@@ -106,7 +106,7 @@ Likewise for $e_2$ we can only pass the first projection to the function in the 
 \end{align*}
 %If we wrote this for $\tau=\exists \alpha. \alpha \time (\tarrow{\alpha}{\alpha})$
 %Then it would not type check because the body would have type \alpha which violates the ``no free \alphas in the body''-rule (specifically the part with $\Delta \vdash \tau_2$)
-We can now informally argue why the $e_1$ and $e_2$ are equivalent. In $e_1$ the only value of type $\alpha$ is $1$ and in $e_2$ it is only $\true$. So the related values, $R$, must be $\{(1,\true)\}$. As  already stated these are the only values we can apply the functions to, so we can quickly find the possible values that can be returned. In $e_1$ it is $(\tlabs{x}{x=0})\; 1 \evalto \false$ and in $e_2$ it is $(\tlabs{x}{\enot x })\; true \evalto \false$. The only value that is ever exposed from the package is $\false$. If this claim is true, then it is impossible for a client to observe a difference and thus which package is in fact in use. 
+We can now informally argue why the $e_1$ and $e_2$ are equivalent. In $e_1$ the only value of type $\alpha$ is $1$ and in $e_2$ it is only $\true$. So the related values, $R$, must be $\{(1,\true)\}$. As  already stated these are the only values we can apply the functions to, so we can quickly find the possible values that can be returned. In $e_1$ it is $(\tlabs{x}{x=0})\; 1 \evalto \false$ and in $e_2$ it is $(\tlabs{x}{\enot x })\; true \evalto \false$. The only value that is ever exposed from the package is $\false$. If this claim is true, then it is impossible for a client to observe a difference and thus which package is in fact in use.
 
 To formally argue that $e_1$ and $e_2$ are equivalent we need to properly introduce the syntax we have been talking about so far:
 \begin{align*}
@@ -125,7 +125,7 @@ Now finally we need to extend our value interpretation to consider $\exists \alp
 % Size issue with e_1, the type of e_1 might be larger than what we got.
 \begin{align*}
   \vprep{\exists\alpha.\tau} = \{(&\pack{\rho_1(\tau_1)}{v_1}{\rho_1(\exists\alpha.\tau)},\\
-                                  &\pack{\rho_2(\tau_2)}{v_2}{\rho_2(\exists\alpha.\tau)}) \vbar \exists R \in \Rel[\tau_1,\tau_2].\; (v_1,v_2) \in \vprep[\extsub{\rho}{\alpha}{(\tau_1,\tau_2,R)}]{\tau}\} %Consider whether this should be related at e_1 and e_2. A: See the syntax. We require the right compoonent in the pair to be a value.
+                                  &\pack{\rho_2(\tau_2)}{v_2}{\rho_2(\exists\alpha.\tau)}) \vbar \exists R \in \Rel[\tau_1,\tau_2].\; (v_1,v_2) \in \vprep[\extsub{\rho}{\alpha}{(\tau_1,\tau_2,R)}]{\tau}\} %Consider whether this should be related at e_1 and e_2. A: See the syntax. We require the right component in the pair to be a value.
 \end{align*}
 The relation turns out to be somewhat dual to the one for universal types. Instead of saying $\forall \tau_1,\tau_2,R$ we say $\exists \tau_1,\tau_2,R$, but as we get $\tau_1$ and $\tau_2$ directly from the values we omit them in the definition. We also relate the two values at $\tau$ and extend the the relational substitution with the types we have for $\alpha$. Notice that we use $\rho$ to close of the type variables in the two values we related.
 
@@ -137,7 +137,7 @@ With this extension to the value interpretation we are ready to show that $e_1$ 
 \]
 \end{theorem}
 \begin{proof}
-  With an empty environment this amounts to show $(e_1,e_2) \in \eprep[\emptyset]{\exists \alpha. \alpha \times (\tarrow{\alpha}{bool})}$. To show this we need to establish that $e_1$ and $e_2$ evaluates down to some value and that these two values are related under the same type and relational substitution. $e_1$ and $e_2$ are $\epack$-expressions so they are already values, so we just need to show $(e_1,e_2) \in \vprep[\emptyset]{\exists \alpha. \alpha \times (\tarrow{\alpha}{bool})}$. We now need to pick a relation and show that the implementations are related under $\alpha \times (\tarrow{\alpha}{bool})$ that is 
+  With an empty environment this amounts to show $(e_1,e_2) \in \eprep[\emptyset]{\exists \alpha. \alpha \times (\tarrow{\alpha}{bool})}$. To show this we need to establish that $e_1$ and $e_2$ evaluates down to some value and that these two values are related under the same type and relational substitution. $e_1$ and $e_2$ are $\epack$-expressions so they are already values, so we just need to show $(e_1,e_2) \in \vprep[\emptyset]{\exists \alpha. \alpha \times (\tarrow{\alpha}{bool})}$. We now need to pick a relation and show that the implementations are related under $\alpha \times (\tarrow{\alpha}{bool})$ that is
   \[
   (\tuple{1, \tlabs{x}{int}{x=0}},\tuple{\true, \tlabs{x}{bool}{\enot\; x}}) \in \vprep[\extsub{\emptyset}{\alpha}{(int,bool,R)}]{\alpha \times (\tarrow{\alpha}{bool})}
   \]
@@ -149,7 +149,7 @@ With this extension to the value interpretation we are ready to show that $e_1$ 
   \[
   (\tlabs{x}{int}{x=0},\tlabs{x}{bool}{\enot\; x}) \in \vprep[\extsub{\emptyset}{\alpha}{(int,bool,R)}]{\tarrow{\alpha}{bool}}
   \]
-  Suppose $(v_1,v_2) \in \vprep[\extsub{\emptyset}{\alpha}{(int,bool,R)}]{\alpha}$ 
+  Suppose $(v_1,v_2) \in \vprep[\extsub{\emptyset}{\alpha}{(int,bool,R)}]{\alpha}$
   which is the same as $(v_1,v_2) \in R$. Due to our choice of $R$ we then have $v_1 = 1$ and $v_2 = false$.
   Now we need to show show $(v_1 = 0,\enot\; v_2) \in \eprep[\extsub{\emptyset}{\alpha}{(int,bool,R)}]{bool}$. Which means that we need to show that the two expressions evaluate to two values related under $bool$. $v_1 = 0$ evaluates to $\false$ as $v_1$ is 1 and $\enot\; v_2$ evaluates to $\false$ as well as $v_2 = \true$, so we need to show $(\false,\false) \in \vprep[\extsub{\emptyset}{\alpha}{(int,bool,R)}]{bool}$ which is true by definition of the value interpretation of $bool$.
 \end{proof}

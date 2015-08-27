@@ -2,11 +2,11 @@
 \subsection*{A Logical Relation for System F}
 Now we need to build a logical relation for System F. With this logical relation we would like to be able to prove the free theorems from lecture 3. Our value interpretation will now consist of pairs as we are defining a relation. The value relation will have the following form:
 \[
-  \vpred{\tau} = \{(v_1,v_2) \vbar 
-                        \mtenv ; \mtenv \vdash v_1 : \tau \pand 
+  \vpred{\tau} = \{(v_1,v_2) \vbar
+                        \mtenv ; \mtenv \vdash v_1 : \tau \pand
                         \mtenv ; \mtenv \vdash v_1 : \tau \pand \dots \}
 \]
-In our value interpretation we require $v_1$ and $v_2$ to be closed and well typed, but for succinctness we do not write this in the definitions below. 
+In our value interpretation we require $v_1$ and $v_2$ to be closed and well typed, but for succinctness we do not write this in the definitions below.
 Let us try to naively build the logical relation the same way we build the logical predicates:
 \begin{align*}
   \vpred{bool}                 & = \{ (\true,\true), (\false,\false) \} \\
@@ -18,13 +18,17 @@ We did not define a value interpretation for type variables in lecture 3, so let
 
 The next type is $\forall \alpha. \; \tau$. When we define the value interpretation we consider the elimination forms which in this case is type application. Before we proceed let us consider one of the free theorems from lecture 3 that we wanted to be able to prove:
 \begin{theorem}
-  If $\mtenv \vdash \tau$, 
-  $\mtenv \vdash \tau'$, 
-  $\mtenv \vdash v_1 : \tau$, 
-  and $\mtenv \vdash v_1 : \tau'$, 
+  If $\mtenv \vdash \tau$,
+  $\mtenv \vdash \tau'$,
+  $\mtenv \vdash v_1 : \tau$,
+  and $\mtenv \vdash v_1 : \tau'$,
   then $\ctxeq{e[\tau]\; v_1}{e[\tau']\; v_2} : bool$.
 \end{theorem}
-There are some important points to notice in this free theorem. First of all, we want to be able to apply $\Lambda$-terms to different types, so in our value interpretation we will have to pick to different types. Further, normally we pick related expressions, so it would probably be a good idea to pick related types. We do, however, not have a notion of related types, and in the theorem there is no relation between the two types used, so relating them might not be a good idea after all. With these points in mind we can make a first attempt at defining the value interpretation of $\forall \alpha. \; \tau$:
+There are some important points to notice in this free theorem. First
+of all, we want to be able to apply $\Lambda$-terms to different
+types, so in our value interpretation we will have to pick two
+different types. Further, normally we pick related expressions, so it
+would probably be a good idea to pick related types. We do not, however, have a notion of related types, and in the theorem there is no relation between the two types used, so relating them might not be a good idea after all. With these points in mind we can make a first attempt at defining the value interpretation of $\forall \alpha. \; \tau$:
 \[
   \vpred{\forall \alpha. \; \tau} = \{(\tLabs{e_1}, \tLabs{e_2}) \vbar \forall \tau_1,\tau_2. \; (\subst{e_1}{\tau_1}{\alpha},\subst{e_2}{\tau_2}{\alpha}) \in \epred{\subst{\tau}{?}{\alpha}} \}
   \]
@@ -42,10 +46,10 @@ We need to parameterize the entire logical relation with the relational substitu
 \]
 We need to say that the values are related, but the question is how to relate them. To figure this out we again look to the free theorem. In the free theorem, the two values are related at the argument type we choose. We therefore pick a relation on these types when we pick the types. We remember the relation we pick in the relational substitution. We finally reach our definition of the value interpretation of $\forall \alpha. \; \tau$:
 \[
-  \vprep{\forall \alpha.\; \tau}  = \{(\tLabs{e_1},\tLabs{e_2}) \vbar 
-  \forall \tau_1 , \tau_2, R. \; 
+  \vprep{\forall \alpha.\; \tau}  = \{(\tLabs{e_1},\tLabs{e_2}) \vbar
+  \forall \tau_1 , \tau_2, R. \;
     R \in \Rel[\tau_1,\tau_2].\;
-      (\subst{e_1}{\tau_1}{\alpha},\subst{e_2}{\tau_2}{\alpha}) \in \eprep[\extsub{\rho}{\alpha}{(\tau_1,\tau_2,R)}]{\tau} \} 
+      (\subst{e_1}{\tau_1}{\alpha},\subst{e_2}{\tau_2}{\alpha}) \in \eprep[\extsub{\rho}{\alpha}{(\tau_1,\tau_2,R)}]{\tau} \}
 \]
 We do not require much of the relation, $R$. It has to be a set of pairs of values, and the values in every pair of the relation have to be closed and well typed under the corresponding type. So we define $\Rel[\tau_1,\tau_2]$ as:
 \[
@@ -63,7 +67,7 @@ Define the following projections:
 \begin{align*}
   \rho_1 & = \{\alpha_1 \mapsto \tau_{11}, \; \alpha_2 \mapsto \tau_{21},\; \dots \;\} \\
   \rho_2 & = \{\alpha_1 \mapsto \tau_{12}, \; \alpha_2 \mapsto \tau_{22},\; \dots \;\} \\
-  \rho_R & = \{\alpha_1 \mapsto R_1, \; \alpha_2 \mapsto R_2,\; \dots \;\} 
+  \rho_R & = \{\alpha_1 \mapsto R_1, \; \alpha_2 \mapsto R_2,\; \dots \;\}
 \end{align*}
 Notice that $\rho_1$ and $\rho_2$ now are type substitutions, so we write $\rho_1(\tau)$ to mean $\tau$ where all the type variables mentioned in the substitution has been substituted with the appropriate types. We can now write the value interpretation for type variables in a more succinct way:
 \[
@@ -91,11 +95,11 @@ We define our interpretation of expressions as follows:
 We now need to give an interpretation of the contexts $\Delta$ and $\Gamma$:
 \begin{align*}
   \dpred{\mtenv}         &= \{\emptyset \} \\
-  \dpred{\Delta, \alpha} &= \{\extsub{\rho}{\alpha}{(\tau_1,\tau_2,R)} \vbar 
-                                 \rho \in \dpred{\Delta} \pand 
+  \dpred{\Delta, \alpha} &= \{\extsub{\rho}{\alpha}{(\tau_1,\tau_2,R)} \vbar
+                                 \rho \in \dpred{\Delta} \pand
                                  R \in \Rel[\tau_1,\tau_2] \} \\
   \gprep{\mtenv}         &= \{\emptyset \} \\
-  \gprep{\Gamma, x:\tau} &= \{\extsub{\gamma}{x}{(v_1,v_2)} \vbar 
+  \gprep{\Gamma, x:\tau} &= \{\extsub{\gamma}{x}{(v_1,v_2)} \vbar
                                  \gamma \in \gprep{\Gamma} \pand
                                  (v_1,v_2) \in \vprep{\tau}\}
 \end{align*}
@@ -122,13 +126,13 @@ Now we have defined our logical relation the first thing we want to do is to pro
 \begin{fundamentalprop}[Fundamental Property]
   If $\Delta; \Gamma \vdash e : \tau$ then $\Delta; \Gamma \vdash \lreq{e}{e} : \tau$
 \end{fundamentalprop}
-This theorem may seem a bit mundane, but it is actually quite strong. In the definition of the logical relation, $\Delta$ and $\Gamma$ can be seen as maps of placeholders that needs to be replaced in the expression. So when we choose a $\rho$ and $\gamma$ we may pick different types and terms to put in the expression. Closing the expression of can then give us two very different programs. 
+This theorem may seem a bit mundane, but it is actually quite strong. In the definition of the logical relation, $\Delta$ and $\Gamma$ can be seen as maps of place holders that needs to be replaced in the expression. So when we choose a $\rho$ and $\gamma$ we may pick different types and terms to put in the expression. Closing the expression of can then give us two very different programs.
 
 In some presentations this is also known as the parametricity lemma. It may even be stated with out the short-hand notation for equivalence we use here.
 
 We could prove the theorem directly by induction over the typing derivation, but we will instead prove it by means of compatibility lemmas.
-%''Parametricity'' \Delta; \Gamma <- Placeholders for input. When we close of the terms we get two different programs.
-%Prove directly via induction on typing judgement. One case per typing rule.
+%''Parametricity'' \Delta; \Gamma <- Place holders for input. When we close of the terms we get two different programs.
+%Prove directly via induction on typing judgment. One case per typing rule.
 \subsubsection*{Compatibility Lemmas}
 We state a compatibility for each of the typing rules we have. Each of the lemmas will correspond to a case in the induction proof of the Fundamental Property so the theorem will follow directly from the compatibility lemmas. We state the compatibility lemmas as rules to highlight the connection to the typing rules. The premises of the lemma are over the horizontal line, and the conclusion is below:
 \begin{enumerate}
@@ -152,12 +156,12 @@ We will only prove the compatibility lemma for type application. To do so we are
 \begin{lemma}[Compositionality]
   Let $\Delta \vdash \tau'$, $\Delta, \alpha \vdash \tau$, $\rho \in \dpred{\Delta}$, and $R=\vprep{\tau'}$ then
 \[
-  \vprep{\subst{\tau}{\tau'}{\alpha}} = \vprep[\extsub{\rho}{\alpha}{(\rho_1(\tau'),\rho_2(\tau'),R)}]{\tau} 
+  \vprep{\subst{\tau}{\tau'}{\alpha}} = \vprep[\extsub{\rho}{\alpha}{(\rho_1(\tau'),\rho_2(\tau'),R)}]{\tau}
 \]
 \end{lemma}
 The lemma says syntactically substituting some type for $\alpha$ into $\tau$ and then interpreting it is the same as semantically substituting the type for $\alpha$. To prove this lemma we would need to show $\vprep{\tau} \in \Rel[\rho_1(\tau),\rho_2(\tau)]$ which is fairly easy given how we have defined our value interpretation.
 \begin{proof}[Proof. (Compatibility, Lemma 6)]
-What we want to show is 
+What we want to show is
 \[
   \inferrule*{\Delta; \Gamma \vdash \lreq{e_1}{e_2} : \forall \alpha . \tau \and
               \Delta \vdash \tau'}
@@ -171,7 +175,7 @@ So we assume (1) $\Delta; \Gamma \vdash \lreq{e_1}{e_2} : \forall \alpha . \tau$
   \end{align*}
 The two first follows from the well-typedness part of (1) together with (2) and the appropriate typing rule. So it only remains to show the last one.
 
-Suppose we have a $\rho$ in $\dpred{\Delta}$ and a $\gamma$ in $\gprep{\Gamma}$. We then need to show $(\rho_1(\gamma_1(e_1[\tau'])),\rho_2(\gamma_2(e_2[\tau']))) \in \eprep{\subst{\tau}{\tau'}{\alpha}}$. From the $\curly{E}$-relation we find that to show this we need to show that the two terms run down to two values and those values are related. 
+Suppose we have a $\rho$ in $\dpred{\Delta}$ and a $\gamma$ in $\gprep{\Gamma}$. We then need to show $(\rho_1(\gamma_1(e_1[\tau'])),\rho_2(\gamma_2(e_2[\tau']))) \in \eprep{\subst{\tau}{\tau'}{\alpha}}$. From the $\curly{E}$-relation we find that to show this we need to show that the two terms run down to two values and those values are related.
 
 We keep this goal in mind and turn our attention to our premise, (1). This gives us by definition:
 \[
@@ -215,10 +219,10 @@ From the fundamental property and the well-typedness of $e$ we know $\mtenv \vda
 \forall \rho \in \dpred{\Delta}. \; \forall \gamma \in \gprep{\Gamma}. \; (\rho_1(\gamma_1(e)),\rho_2(\gamma_2(e))) \in \eprep{\aaa}
 \]
 \newcommand{\mt}{\ensuremath{\emptyset}}
-We instantiate this with an empty $\rho$ and an empty $\gamma$ to get $(e,e) \in \eprep[\mt]{\aaa}$. From the definition of this we know that $e$ evaluates to some value $F$ and $(F,F) \in \vprep[\mt]{\aaa}$. As $F$ is a value of type \aaa{} we know $F=\tLabs{e_1}$ for some $e_1$. Now use the fact that $(F,F) \in \vprep[\mt]{\aaa}$ by instantiating it with the type $\tau$ twice and the relation $R=\{(v,v)\}$ to get 
+We instantiate this with an empty $\rho$ and an empty $\gamma$ to get $(e,e) \in \eprep[\mt]{\aaa}$. From the definition of this we know that $e$ evaluates to some value $F$ and $(F,F) \in \vprep[\mt]{\aaa}$. As $F$ is a value of type \aaa{} we know $F=\tLabs{e_1}$ for some $e_1$. Now use the fact that $(F,F) \in \vprep[\mt]{\aaa}$ by instantiating it with the type $\tau$ twice and the relation $R=\{(v,v)\}$ to get
 \newcommand{\env}{\ensuremath{\extsub{\mt}{\alpha}{(\tau,\tau,R)}}}
 \newcommand{\taa}{\ensuremath{\tarrow{\alpha}{\alpha}}}
-$(\subst{e_1}{\tau}{\alpha},\subst{e_1}{\tau}{\alpha})\in \eprep[\env]{\taa}$. We notice that this instantiation is alright as $R \in \Rel[\tau,\tau]$.
+$(\subst{e_1}{\tau}{\alpha},\subst{e_1}{\tau}{\alpha})\in \eprep[\env]{\taa}$. We notice that this instantiation is all right as $R \in \Rel[\tau,\tau]$.
 
 This step is an important part of a proof of any free theorem namely choosing the relation. Before we chose the relation we picked two types. We did this based on the theorem we want to show. In the theorem we instantiate $e$ with $\tau$, so we pick $\tau$. Likewise with the relation, in the theorem we give $v$ to the function with the domain $\alpha$, so we pick the singleton relation consisting of $(v,v)$. Picking the correct relation is what requires some work in the proof of a free theorem. The remaining work done in the proof is simply unfolding of definitions.
 
@@ -244,7 +248,7 @@ First we argued that $e[\tau]$ steps to some $F$ and that $F$ was a type abstrac
 \begin{enumerate}
 \item Prove the following free theorem:
   \begin{theorem}[Free Theorem (II)]
-    If $\mtenv; \mtenv \vdash e : \forall \alpha. \; (\tarrow{(\tarrow{\tau}{\alpha})}{\alpha})$ and 
+    If $\mtenv; \mtenv \vdash e : \forall \alpha. \; (\tarrow{(\tarrow{\tau}{\alpha})}{\alpha})$ and
        $\mtenv; \mtenv \vdash k : \tarrow{\tau}{\tau_k}$ then
     \[
       \mtenv; \mtenv \vdash \lreq{e[\tau_k] \; k}{k(e[\tau] \; \tlabs{x}{\tau}{x})} : \tau_k
