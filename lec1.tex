@@ -4,9 +4,9 @@ The language used to present logical predicates and relations is the simply type
 \begin{tabular}{ r | l }
   Types: & $\tau ::=  bool \vbar \tarrow{\tau}{\tau}$ \\
   \hline
-  Terms: & $e    ::= x \vbar \true 
-                       \vbar \false       
-                       \vbar \eif{e}{e}{e} 
+  Terms: & $e    ::= x \vbar \true
+                       \vbar \false
+                       \vbar \eif{e}{e}{e}
                        \vbar \tlabs{x}{\tau }{e}
                        \vbar e \; e$ \\
   \hline
@@ -15,7 +15,7 @@ The language used to present logical predicates and relations is the simply type
   Evaluation  & \multirow{2}{*}{$E    ::= [] \vbar \eif{E}{e}{e} \vbar E \; e \vbar v \; E$}\\
   contexts: & \\
   \hline
-  \multirow{4}{*}{Evaluations:}    
+  \multirow{4}{*}{Evaluations:}
                                    & $\eif{\true}{e_1}{e_2} \evalto e_1$ \\
                                    & $\eif{\false}{e_1}{e_2} \evalto e_2$ \\
                                    & $(\tlabs{x}{\tau}{e}) \; v \evalto \subst{e}{v}{x}$ \\
@@ -49,9 +49,9 @@ Logical relations are used to prove properties about programs in a language. Log
     \]
     The program cannot inspect $\alpha$ as it has no idea which type it will be, therefore $f$ must be identity function.
     \[
-    \forall. \; \tarrow{int}{\alpha}
+    \forall \alpha. \; \tarrow{int}{\alpha}
     \]
-    A function with this type does not exist (the function would need to return something of type $\alpha$, but it only has something of type $int$ to work with so it cannot possibly return a value of the proper type).
+    A function with this type cannot exist (the function would need to return something of type $\alpha$, but it only has something of type $int$ to work with so it cannot possibly return a value of the proper type).
   \item Security-Typed Languages (for Information Flow Control (IFC))\\
         Example: All types in the code snippet below are labeled with their security level. A type can be labeled with either $L$ for \emph{low} or $H$ for \emph{high}. We do not want any flow from variables with a \emph{high} labeled type to a variable with a \emph{low} labeled type. The following is an example of an insecure \emph{explicit flow} of information:
         \begin{lstlisting}[escapeinside={@}{@}]
@@ -74,7 +74,7 @@ If we run $P$ with the same \emph{low} value and with two different \emph{high} 
   \end{itemize}
 \end{itemize}
 \subsection*{Categories of Logical Relations}
-We can split logical relations into two logical relations and logical predicates. Logical predicates are unary and used usually used to show properties of a program. Logical relations are binary and are usually used to show equivalences:\\
+We can split logical relations into two: logical relations and logical predicates. Logical predicates are unary and used usually used to show properties of a program. Logical relations are binary and are usually used to show equivalences:\\
 \begin{tabular}{l | l}
   Logical Predicates     & Logical Relations    \\
 \hline
@@ -85,7 +85,9 @@ We can split logical relations into two logical relations and logical predicates
   - Type safety          & \\
 \end{tabular}
 \subsection*{Strong Normalization of STLC}
-In this section we wish to show that the simply typed lambda calculus has strong normalization which means that every term is strongly normalizing. Normalization of a term the process of reducing a term into its normal form. If a term is strongly normalizing, then it reduces to its normal form. In our case we define the normal forms of the language to be the values of the language.
+In this section we wish to show that the simply typed lambda calculus
+has strong normalization which means that every term is strongly
+normalizing. Normalization of a term is the process of reducing a term into its normal form. If a term is strongly normalizing, then it reduces to its normal form. In our case we define the normal forms of the language to be the values of the language.
 \subsubsection*{A first try on normalization of STLC}
 We start with a couple of abbreviations:
 \begin{align*}
@@ -97,12 +99,14 @@ What we want to prove is:
 \begin{strnorm}[Strong Normalization]~\\
   If $\mtenv \vdash e : \tau$ then $e \Downarrow$
 \end{strnorm}
-\begin{proof} 
+\begin{proof}
 \warning{This proof gets stuck and is not complete. It is included to motivate the use of a logical predicate.}
 Induction on the structure of the typing derivation.
 \case{$\mtenv \vdash \true : bool$} this term has already terminated.
 \case{$\mtenv \vdash \false : bool$} same as for \true.
-\case{$\mtenv \vdash \eif{e}{e_1}{e_2} : \tau$} simple, but requires the use of canonical forms of bool.
+\case{$\mtenv \vdash \eif{e}{e_1}{e_2} : \tau$} simple, but requires
+the use of canonical forms of bool.
+% Perhaps a brief note on what canonical forms is?
 \case{$\mtenv \vdash \tlabs{x}{\tau_1}{e}$ : \tarrow{\tau_1}{\tau_2}} it is a value already and it has terminated.
 \case{$ \TApp $} \\
 By the induction hypothesis we get $e_1 \Downarrow v_1$ and $e_2 \Downarrow v_2$. By the type of $e_1$ we conclude $e_1 \Downarrow \tlabs{x}{\tau_2}{e'}$. What we need to show is $e_1 \; e_2 \Downarrow$. We know $e_1 \; e_2$ takes the following steps:
@@ -156,9 +160,9 @@ Here $\gamma$ is a substitution, $\gamma = \{x_1 \mapsto v_1, \dots , x_n \mapst
 
 In English the theorem reads: If $e$ is well-typed with respect to some type $\tau$ and we have some closing substitution that satisfy the typing environment, then if we close of $e$ with $\gamma$, then this closed expression is in $\SNPred_\tau$.
 
-$\gamma \models \Gamma$ is read ``the substitution, $\gamma$, satisfies the type environment, $\Gamma$.'' It is defined as follows:
+$\gamma \models \Gamma$ is read ``the substitution $\gamma$ satisfies the type environment, $\Gamma$.'' It is defined as follows:
 \[
-  \gamma \models \Gamma \eqdef \dom(\gamma) = \dom(\Gamma) \pand 
+  \gamma \models \Gamma \eqdef \dom(\gamma) = \dom(\Gamma) \pand
                  \forall x \in \dom(\Gamma). \; \SN{\Gamma(x)}{\gamma(x)}
 \]
 To prove the generalized theorem we need further two lemmas
@@ -175,12 +179,12 @@ To prove the generalized theorem we need further two lemmas
 \begin{proof}
   Probably also left as an exercise (not proved during the lecture).
 \end{proof}
-\begin{proof}[Proof. (Substitution lemma)] 
+\begin{proof}[Proof. (Substitution lemma)]
   Left as an exercise.
 \end{proof}
 \begin{proof}[Proof. (\circled{a} Generalized)] Proof by induction on $\Gamma \vdash e : \tau$.
 \case{$\Gamma \vdash \true : bool$} \\
-We have: 
+We have:
 \begin{description}
   \item $\gamma \models \Gamma$
 \end{description}
@@ -191,7 +195,7 @@ We need to show:
 If we do the substitution we just need to show $\SN{bool}{\true}$ which is true by definition of $\SN{bool}{\true}$.
 \case{$\Gamma \vdash \false : bool$} similar to the \true{} case.
 \case{\TVar}\\
-We have: 
+We have:
 \begin{description}
   \item $\gamma \models \Gamma$
 \end{description}
@@ -202,7 +206,7 @@ We need to show:
 This case follows from the definition of $\Gamma \models \gamma$. We know that $x$ is well-typed, so it is in the domain of $\Gamma$. From the definition of $\Gamma \models \gamma$ we then get $\SN{\Gamma(x)}{\gamma(x)}$. From well-typedness of $x$ we have $\Gamma(x) = \tau$ which then gives us what we needed to show.
 \case{$\Gamma \vdash \eif{e}{e_1}{e_2} : \tau$} left as an exercise.
 \case{\TApp}\\
-We have: 
+We have:
 \begin{description}
   \item $\gamma \models \Gamma$
 \end{description}
@@ -217,7 +221,7 @@ By the induction hypothesis we have
 \end{align}
 If we use the 3rd property of (1), $\forall e'. \; \SN{\tau_2}{e'} \implies \SN{\tau}{\gamma(e_1) \; e'}$, instantiated with (2), then we get $\SN{\tau}{\gamma(e_1) \; \gamma(e_2)}$ which is the result we need.
 \case{\TAbs} \\
-We have: 
+We have:
 \begin{description}
   \item $\gamma \models \Gamma$
 \end{description}
@@ -235,7 +239,7 @@ It suffices to show the following three things:
 \item $\tlabs{x}{\tau_1}{\gamma(e)} \Downarrow$
 \item $\forall e'. \SN{\tau_1}{e'} \implies \SN{\tau_2}{(\tlabs{x}{\tau_1}{\gamma(e)}) \; e'}$
 \end{enumerate}
-If we use the substitution lemma and push the $\gamma$ in under the $\lambda$-abstraction, then we get 1\footnote{Substitution has not been formally defined here, but one can find a sound definition in Pierce's Types and Programming Languages.}. 2 is okay as the lambda-abstraction is a value. 
+If we use the substitution lemma and push the $\gamma$ in under the $\lambda$-abstraction, then we get 1\footnote{Substitution has not been formally defined here, but one can find a sound definition in Pierce's Types and Programming Languages.}. 2 is okay as the lambda-abstraction is a value.
 
 It only remains to show 3. To do this we want to somehow apply the induction hypothesis for which we need a $\gamma'$ such that $\gamma' \models \Gamma, x:\tau_1$. We already have $\gamma$ and $\gamma \models \Gamma$, so our $\gamma'$ should probably have have the form $\gamma' = \gamma[x \mapsto v_?]$ for some $v_?$ of type $\tau_1$. Let us move on and see if any good candidates for $v_?$ present themselves.
 
@@ -244,10 +248,10 @@ Let $e'$ be given and assume $\SN{\tau_1}{e'}$. We then need to show $\SN{\tau_2
 Now consider the following evaluation:
 \begin{align*}
   (\tlabs{x}{\tau_1}{\gamma(e)}) \; e' & \evaltos (\tlabs{x}{\tau_1}{\gamma(e)}) \; v' \\
-                                       & \evalto \gamma(e)[v'/x] \equiv 
+                                       & \evalto \gamma(e)[v'/x] \equiv
                                                    \gamma[x \mapsto v'](e)
 \end{align*}
-We already concluded that $e' \evaltos v'$ which corresponds to the first series of steps. We can then do a $\beta$-reduction to take the next step and finally we get something that is equivalent to $\gamma[x \mapsto v'](e)$. That is we have the evaluation
+We already concluded that $e' \evaltos v'$, which corresponds to the first series of steps. We can then do a $\beta$-reduction to take the next step and finally we get something that is equivalent to $\gamma[x \mapsto v'](e)$. That is we have the evaluation
 \[
 (\tlabs{x}{\tau_1}{\gamma(e)}) \; e' \evaltos \gamma[x \mapsto v'](e)
 \]
@@ -262,9 +266,9 @@ If we use \SN{\tau_2}{\gamma[x\mapsto v'](e)} with $(\tlabs{x}{\tau_1}{\gamma(e)
 \item Prove the substitution lemma.
 \item Go through the cases of ``\circled{a} Generalized'' shown here by yourself.
 \item Prove the if-case of ``\circled{a} Generalized''.
-\item Extend the language with pairs and do the proofs. 
+\item Extend the language with pairs and adjust the proofs.
   \begin{enumerate}
-  \item See how the clauses, we generally wanted our logical predicate to have, play out when we extend the logical predicate. Do we need to add anything for the third clause or does it work out without putting anything there like we did with the $bool$ case.
+  \item See how the clauses we generally wanted our logical predicate to have play out when we extend the logical predicate. Do we need to add anything for the third clause or does it work out without putting anything there, like we did with the $bool$ case?
   \end{enumerate}
 \end{enumerate}
 \clearpage

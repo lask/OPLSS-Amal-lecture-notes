@@ -1,11 +1,11 @@
 \section*{Lecture 2, Type Safety}
-The goal of this lecture was to proof type safety for STLC using logical relations. First we need to consider what type safety is. The classical mantra for type safety is ``Well-typed programs do not \emph{go wrong}.'' It depends on the language and type system what \emph{go wrong} means, but in our case a program has \emph{gone wrong} if it is stuck\footnote{If we consider language-based security for information flow control the notion of \emph{go wrong} would be that there is an undesired flow of information} (an expression is stuck if it is irreducible but not a value). 
+The goal of this lecture was to proof type safety for STLC using logical relations. First we need to consider what type safety is. The classical mantra for type safety is ``Well-typed programs do not \emph{go wrong}.'' It depends on the language and type system what \emph{go wrong} means, but in our case a program has \emph{gone wrong} if it is stuck\footnote{If we consider language-based security for information flow control the notion of \emph{go wrong} would be that there is an undesired flow of information} (an expression is stuck if it is irreducible but not a value).
 
 \subsection*{Type Safety for STLC}
 \begin{stlctypesafety}[Type Safety for STLC]
   If $\mtenv \vdash e : \tau$ and $e \evaltos e'$ then $\val(e')$ or $\exists e''. \; e' \evalto e''$.
 \end{stlctypesafety}
-Traditionally type safety is proven by two lemmas, progress and preservation.
+Traditionally type safety is proven by two lemmas: progress and preservation.
 \begin{progress}[Progress]
   If $\mtenv \vdash e : \tau$ then $\val(e)$ or $\exists e'. \; e \evalto e'$.
 \end{progress}
@@ -13,12 +13,14 @@ Progress is normally proved by induction on the typing derivation.
 \begin{preservation}[Preservation]
   If $\mtenv \vdash e : \tau$ and $e \evalto e'$ then $\mtenv \vdash e' : \tau$.
 \end{preservation}
-Preservation is normally proved by induction on the evaluation.
-Preservation is also known as \emph{subject reduction}. Progress and preservation talk about one step, so to prove type safety we have to do induction on the evaluation. Here we do not want to prove type safety the traditional way. We want to prove it using a logical predicate. We use a logical predicate rather than a logical relation because type safety is a unary property.
+Preservation is normally proved by induction on the evaluation relation.
+Preservation is also known as \emph{subject reduction}. Progress and
+preservation talk about one step, so to prove type safety we have to
+do induction on the evaluation relation. Here we do not want to prove type safety the traditional way. We want to prove it using a logical predicate. We use a logical predicate rather than a logical relation because type safety is a unary property.
 
 The notation will here be changed compared to the one from lecture 1. We define the logical predicate in two parts: a value interpretation and an expression interpretation. The value interpretation is a function from types to the power set of closed values:
 \[
-  \vpred{ } : \tarrow{type}{\curly{P}(ClosedVal)}
+  \vpred{ - } : \tarrow{type}{\curly{P}(ClosedVal)}
 \]
 The value interpretation is defined as:
 \begin{align*}
@@ -28,8 +30,17 @@ The value interpretation is defined as:
 We define the expression interpretation as:
 \[
   \epred{\tau} = \{e \vbar \forall e'. \; e \evaltos e' \pand \irred(e') \implies e' \in \curly{V}\sem{\tau} \}
-\]
-\footnote{Notice that neither \vpred{\tau} nor \epred{\tau} requires well-typedness. Normally this would be a part of the predicate, but as the goal is to prove type safety we do not want it as a part of the predicate. In fact, if we did include a well-typedness requirement, then we would end up having to prove preservation for some of the proofs to go through. We do, however, require the value interpretation to only contain closed values.}The predicate $\irred$ is defined as:
+  \]
+
+Notice that neither \vpred{\tau} nor \epred{\tau} requires
+well-typedness. Normally this would be a part of the predicate, but as
+the goal is to prove type safety we do not want it as a part of the
+predicate. In fact, if we did include a well-typedness requirement,
+then we would end up having to prove preservation for some of the
+proofs to go through. We do, however, require the value interpretation
+to only contain closed values.
+
+The predicate $\irred$ is defined as:
 \[
   \irred(e) \eqdef \not\exists e'. \; e \evalto e'
 \]
@@ -47,22 +58,22 @@ We are now ready to prove type safety. Just like we did for strong normalization
 \[
   \circled{b} \quad e \in \epred{\tau} \implies \safe(e)
 \]
-Rather than proving \circled{a} directly we prove a more general theorem and get \circled{a} as a corollary. But we are not yet in a position to state the theorem. First we need to define define the interpretation of type environments:
+Rather than proving \circled{a} directly we prove a more general theorem and get \circled{a} as a corollary. But we are not yet in a position to state the theorem. First we need to define define the interpretation of environments:
 \begin{align*}
   \gpred{\mtenv} & = \{ \emptyset \} \\
-  \gpred{\Gamma,x:\tau} & = \{\gamma[x \mapsto v] \vbar 
-    \gamma \in \gpred{\Gamma} \pand 
+  \gpred{\Gamma,x:\tau} & = \{\gamma[x \mapsto v] \vbar
+    \gamma \in \gpred{\Gamma} \pand
     v \in \vpred{\tau}\}
 \end{align*}
 Further we need to define semantic type safety:
 \[
   \Gamma \models e : \tau \eqdef \forall \gamma \in \gpred{\Gamma} . \; \gamma(e) \in \epred{\tau}
 \]
-We can now define our generalized version of \circled{a}. 
+We can now define our generalized version of \circled{a}.
 \begin{btypesafety}[Fundamental Property]
   If $\Gamma \vdash e : \tau$ then $\Gamma \models e : \tau$
 \end{btypesafety}
-A theorem like this would typically be the first you prove after defining a logical relation. The theorem says that every syntactic type safety implies semantic type safety. 
+A theorem like this would typically be the first you prove after defining a logical relation. The theorem says that every syntactic type safety implies semantic type safety.
 
 We also alter the \circled{b} part of the proof, so we prove
 \[
@@ -71,7 +82,7 @@ We also alter the \circled{b} part of the proof, so we prove
 \begin{proof}[Proof. (Altered \circled{b})]
 Suppose $e \evaltos e'$ for some $e'$, then we need to show $\val(e')$ or $\exists e''. \; e' \evalto e''$. We proceed by casing on whether or not $\irred(e')$:
 \case{$\neg \irred(e')$} this case follows directly from the definition of $\irred$. $\irred(e')$ is defined as $\not \exists e''. \; e' \evalto e''$ and as the assumption is $\neg \irred(e')$ we get $\exists e''. \; e' \evalto e''$.
-\case{$\irred(e')$} By assumption we have $\mtenv \models e : \tau$. As the typing context is empty we choose the empty substitution and get $e \in \epred{\tau}$. We now use the definition of $e \in \epred{\tau}$ with what we supposed, $e \evaltos e'$, and the case assumption, $\irred(e')$, to conclude $e' \in \vpred{\tau}$. As $e'$ is in the value interpretation of $\tau$ we can conclude $\val(e')$. 
+\case{$\irred(e')$} By assumption we have $\mtenv \models e : \tau$. As the typing context is empty we choose the empty substitution and get $e \in \epred{\tau}$. We now use the definition of $e \in \epred{\tau}$ with what we supposed, $e \evaltos e'$, and the case assumption, $\irred(e')$, to conclude $e' \in \vpred{\tau}$. As $e'$ is in the value interpretation of $\tau$ we can conclude $\val(e')$.
 \end{proof}
 To prove the Fundamental Property we need a substitution lemma:
 \begin{lemma}[Substitution]
@@ -87,7 +98,7 @@ Let $e$ be syntactically well-formed term, let $v$ be a closed value and let $\g
 \[
   \gamma'[x \mapsto v] e = \subst{\gamma'(e)}{v}{x}
 \]
-We wish to show 
+We wish to show
 \[
   \gamma'[y \mapsto v'][x \mapsto v] e = \subst{\gamma'[y \mapsto v'](e)}{v}{x}
 \]
@@ -116,7 +127,7 @@ Instantiate this with $\gamma[x \mapsto v]$. We have $\gamma[x \mapsto v] \in \g
 \case{\TApp} show this case as an exercise.\\
 The remaining cases were not proved during the lecture.
 \end{proof}
-Now consider what happens if we add pairs to the language. 
+Now consider what happens if we add pairs to the language.
 %TODO: Clarify what additions to STLC are needed for pairs.
 \begin{comment}
 \begin{align*}
@@ -195,9 +206,9 @@ Here $\mu$ is a fixed point type constructor. As the above is the fixed point, t
 \[
   \mu \alpha.\; F(\alpha) = F(\mu \alpha.\; F(\alpha))
 \]
-Now let us make this look a bit more like types by substituting $F(\alpha)$ for $\tau$. 
+Now let us make this look a bit more like types by substituting $F(\alpha)$ for $\tau$.
 \[
-  \mu \alpha.\; \tau = F(\mu \alpha.\; \tau) 
+  \mu \alpha.\; \tau = F(\mu \alpha.\; \tau)
 \]
 The right hand side is really just $\tau$ with $\mu \alpha. \; \tau$ substituted with $\tau$:
 \[
@@ -233,7 +244,7 @@ When we want to work with this, we would like to be able to get under the $\mu$.
     (2) edge [bend left=10] node [below] {$\fold$} (1);
 \end{tikzpicture}
 \]
-This kind of recursive types is called iso-recursive types, because there is an isomorphism between a $\mu\alpha. \; \tau$ and its unfolding $\tau[\mu\alpha.\; \tau / \alpha]$. 
+This kind of recursive types is called iso-recursive types, because there is an isomorphism between a $\mu\alpha. \; \tau$ and its unfolding $\tau[\mu\alpha.\; \tau / \alpha]$.
 
 STLC extended with recursive types is defined as follows:
 \begin{align*}
@@ -255,7 +266,7 @@ int\; list \eqdef \mu\alpha.\; 1 + (int \times \alpha)
 %TODO: Typing omega
 \begin{comment}
 \[
-  \Omega = (\tlabs{x}{\mu\alpha.\; \tarrow{\alpha}{\tau}}{(\unfold \; x) \; x}) 
+  \Omega = (\tlabs{x}{\mu\alpha.\; \tarrow{\alpha}{\tau}}{(\unfold \; x) \; x})
 \]
 \end{comment}
 \subsection*{Exercises}
